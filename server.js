@@ -1548,10 +1548,21 @@ async function handleApi(req, res, url) {
   }
 }
 
-// Static files may live under different roots depending on how the bundle is laid out
-// (local: ROOT; Vercel lambda: process.cwd() / included files). Try each candidate.
-const STATIC_ROOTS = Array.from(new Set([ROOT, process.cwd()].filter(Boolean)));
-const STATIC_FILES = new Set(['index.html', 'app.html', 'admin.html']);
+// Preload the HTML pages into memory at module load.
+// The literal `path.join(__dirname, '<file>')` calls below are also detected by
+// Vercel's dependency tracer, which then bundles these files into the function —
+// so they are reliably available on serverless regardless of cwd / includeFiles.
+const STATIC_ROOTS = Array.from(new Set([__dirname, ROOT, process.cwd()].filter(Boolean)));
+const STATIC_ASSETS = {};
+try { STATIC_ASSETS['index.html'] = fs.readFileSync(path.join(__dirname, 'index.html')); } catch (e) {}
+try { STATIC_ASSETS['app.html'] = fs.readFileSync(path.join(__dirname, 'app.html')); } catch (e) {}
+try { STATIC_ASSETS['admin.html'] = fs.readFileSync(path.join(__dirname, 'admin.html')); } catch (e) {}
+for (const name of ['index.html', 'app.html', 'admin.html']) {
+  if (STATIC_ASSETS[name]) continue;
+  for (const base of STATIC_ROOTS) {
+    try { const fp = path.join(base, name); if (fs.existsSync(fp)) { STATIC_ASSETS[name] = fs.readFileSync(fp); break; } } catch (e) {}
+  }
+}
 function findStaticFile(relPath) {
   for (const base of STATIC_ROOTS) {
     const fp = path.join(base, relPath);
@@ -1559,16 +1570,19 @@ function findStaticFile(relPath) {
   }
   return null;
 }
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
 function serveStatic(req, res, url) {
-  let rel = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname).replace(/^\/+/, '');
-  // Only serve known static assets; everything else falls back to the landing page.
-  const baseName = rel.split('/').pop();
-  let filePath = (STATIC_FILES.has(baseName) || /\.(css|js|json|png|jpe?g|svg|ico|woff2?)$/i.test(baseName)) ? findStaticFile(rel) : null;
-  if (!filePath) filePath = findStaticFile('index.html');
-  if (!filePath) return text(res, 404, 'Not found');
-  const ext = path.extname(filePath).toLowerCase();
-  const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
-  text(res, 200, fs.readFileSync(filePath), types[ext] || 'application/octet-stream');
+  const baseName = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname).replace(/^\/+/, '').split('/').pop();
+  let body = STATIC_ASSETS[baseName];
+  let ext = path.extname(baseName).toLowerCase();
+  if (!body) {
+    // Other assets (css/js/img) — serve from disk if present (mostly for local dev).
+    const fp = /\.(css|js|json|png|jpe?g|svg|ico|woff2?)$/i.test(baseName) ? findStaticFile(baseName) : null;
+    if (fp) body = fs.readFileSync(fp);
+  }
+  if (!body) { body = STATIC_ASSETS['index.html']; ext = '.html'; } // unknown path -> landing
+  if (!body) return text(res, 404, 'Not found');
+  text(res, 200, body, MIME[ext] || 'application/octet-stream');
 }
 
 async function handleRequest(req, res) {
