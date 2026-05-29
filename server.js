@@ -1548,10 +1548,24 @@ async function handleApi(req, res, url) {
   }
 }
 
+// Static files may live under different roots depending on how the bundle is laid out
+// (local: ROOT; Vercel lambda: process.cwd() / included files). Try each candidate.
+const STATIC_ROOTS = Array.from(new Set([ROOT, process.cwd()].filter(Boolean)));
+const STATIC_FILES = new Set(['index.html', 'app.html', 'admin.html']);
+function findStaticFile(relPath) {
+  for (const base of STATIC_ROOTS) {
+    const fp = path.join(base, relPath);
+    if (fp.startsWith(base) && fs.existsSync(fp) && !fs.statSync(fp).isDirectory()) return fp;
+  }
+  return null;
+}
 function serveStatic(req, res, url) {
-  let filePath = url.pathname === '/' ? path.join(ROOT, 'index.html') : path.join(ROOT, decodeURIComponent(url.pathname));
-  if (!filePath.startsWith(ROOT)) return text(res, 403, 'Forbidden');
-  if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) filePath = path.join(ROOT, 'index.html');
+  let rel = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname).replace(/^\/+/, '');
+  // Only serve known static assets; everything else falls back to the landing page.
+  const baseName = rel.split('/').pop();
+  let filePath = (STATIC_FILES.has(baseName) || /\.(css|js|json|png|jpe?g|svg|ico|woff2?)$/i.test(baseName)) ? findStaticFile(rel) : null;
+  if (!filePath) filePath = findStaticFile('index.html');
+  if (!filePath) return text(res, 404, 'Not found');
   const ext = path.extname(filePath).toLowerCase();
   const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
   text(res, 200, fs.readFileSync(filePath), types[ext] || 'application/octet-stream');
