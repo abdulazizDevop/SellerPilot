@@ -1,0 +1,9 @@
+node_modules/
+# Локальное JSON-хранилище: может содержать токены/пароли. server.js пересоздаёт файлы сам.
+data/
+uploads/
+.vercel
+.env
+.env.*
+*.log
+.DS_Store

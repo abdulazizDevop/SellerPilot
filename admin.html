@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SellerPilot AI — Admin</title>
+<style>
+:root{--bg:#070813;--card:rgba(20,22,42,.78);--border:rgba(255,255,255,.14);--text:#f4f6ff;--muted:#9aa3c7;--green:#20e58a;--red:#ff5c7a;--orange:#ffb84d;--cyan:#00e5ff;--purple:#7c3cff}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0,rgba(124,60,255,.35),transparent 32%),radial-gradient(circle at 80% 20%,rgba(0,229,255,.22),transparent 28%),#070813;color:var(--text);font-family:Segoe UI,system-ui,sans-serif}.wrap{width:min(1200px,calc(100% - 24px));margin:0 auto;padding:22px 0}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:18px}.card{background:linear-gradient(145deg,rgba(20,22,42,.86),rgba(12,14,29,.72));border:1px solid var(--border);border-radius:22px;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.36);backdrop-filter:blur(18px)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.btn{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);border-radius:12px;padding:10px 13px;cursor:pointer;font-weight:800}.btn.primary{border:0;background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff}.btn.danger{color:var(--red)}input,select{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:11px;outline:none}.field{margin-bottom:12px}.field label{display:block;color:var(--muted);font-size:12px;font-weight:800;margin-bottom:6px}.tag{display:inline-flex;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:900;border:1px solid var(--border);color:var(--cyan)}.tag.ok{color:var(--green)}.tag.warn{color:var(--orange)}.tag.err{color:var(--red)}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.09);text-align:left;font-size:13px;vertical-align:top}th{color:var(--muted);font-size:11px;text-transform:uppercase}.muted{color:var(--muted)}pre{white-space:pre-wrap;background:rgba(0,0,0,.22);border:1px solid var(--border);border-radius:14px;padding:12px;max-height:260px;overflow:auto}.hidden{display:none}@media(max-width:800px){.grid{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}table{min-width:800px}.tablewrap{overflow:auto}}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div><h1>🛡️ SellerPilot AI Admin</h1><div class="muted">Выдача доступа после ручной оплаты через WhatsApp</div></div><button class="btn" onclick="logout()">Выйти</button></div>
+  <div class="card" id="loginBox">
+    <h2>Вход администратора</h2>
+    <div class="field"><label>Пароль админа</label><input id="adminPass" type="password" placeholder="ADMIN_PANEL_PASSWORD" /></div>
+    <button class="btn primary" onclick="adminLogin()">Войти</button>
+    <div class="muted" style="margin-top:10px">Для прода обязательно задайте переменную <b>ADMIN_PANEL_PASSWORD</b>.</div>
+  </div>
+  <div id="adminApp" class="hidden">
+    <div class="grid">
+      <div class="card"><h2>📌 Инструкция</h2><p class="muted">Клиент нажимает оплату в кабинете → пишет в WhatsApp → вы находите invoice/логин → нажимаете «Выдать 30 дней».</p><p>WhatsApp админа: <b id="adminPhone">—</b></p><button class="btn primary" onclick="loadOverview()">Обновить</button></div>
+      <div class="card"><h2>⚡ Быстрая выдача</h2><div class="field"><label>User ID</label><input id="manualUserId" placeholder="ID пользователя" /></div><div class="field"><label>Дней доступа</label><input id="manualDays" type="number" value="30" /></div><button class="btn primary" onclick="activateManual()">Выдать доступ</button></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>💳 Ручные оплаты / invoices</h2><div class="tablewrap"><table><thead><tr><th>Статус</th><th>Email / комментарий</th><th>Сумма</th><th>WhatsApp</th><th>Действие</th></tr></thead><tbody id="billingRows"></tbody></table></div></div>
+    <div class="card" style="margin-top:16px"><h2>👤 Пользователи</h2><div class="tablewrap"><table><thead><tr><th>Email</th><th>User ID</th><th>Статус</th><th>Период</th><th>Действие</th></tr></thead><tbody id="userRows"></tbody></table></div></div>
+    <div class="card" style="margin-top:16px"><h2>🛟 Восстановление доступа</h2><div class="tablewrap"><table><thead><tr><th>Дата</th><th>Email</th><th>Телефон</th><th>Комментарий</th></tr></thead><tbody id="recoveryRows"></tbody></table></div></div>
+    <div class="card" style="margin-top:16px"><h2>🧾 Console / API response</h2><pre id="consoleBox">Ответы API будут здесь. Также смотри DevTools Console.</pre></div>
+  </div>
+</div>
+<script>
+let adminToken=localStorage.getItem('adminToken')||'';
+function log(label,data){console.log('[ADMIN]',label,data);document.getElementById('consoleBox').textContent=label+'\n'+JSON.stringify(data,null,2)}
+async function adminApi(path,opts={}){const res=await fetch(path,{...opts,headers:{'Content-Type':'application/json',Authorization:'Bearer '+adminToken,...(opts.headers||{})}});const txt=await res.text();let data={};try{data=txt?JSON.parse(txt):{}}catch{data={raw:txt}};log(path,data);if(!res.ok)throw new Error(data.error||'HTTP '+res.status);return data}
+async function adminLogin(){try{const data=await adminApi('/api/admin/login',{method:'POST',body:JSON.stringify({password:document.getElementById('adminPass').value})});adminToken=data.token;localStorage.setItem('adminToken',adminToken);document.getElementById('loginBox').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');loadOverview()}catch(e){alert(e.message)}}
+function logout(){localStorage.removeItem('adminToken');adminToken='';location.reload()}
+async function loadOverview(){try{const data=await adminApi('/api/admin/overview');render(data)}catch(e){if(adminToken){alert(e.message)}document.getElementById('loginBox').classList.remove('hidden');document.getElementById('adminApp').classList.add('hidden')}}
+function statusTag(s){return '<span class="tag '+(s==='active'?'ok':s==='trial'?'warn':s==='paid'?'ok':s==='pending'?'warn':'err')+'">'+s+'</span>'}
+function render(data){document.getElementById('adminPhone').textContent=data.adminPhone;document.getElementById('billingRows').innerHTML=(data.billing||[]).map(b=>`<tr><td>${statusTag(b.status)}</td><td><b>${b.email||''}</b><br><span class="muted">${b.comment||''}</span><br><span class="muted">${b.id}</span></td><td>${b.amountRub||0} ₽</td><td>${b.whatsappUrl?`<a class="btn" target="_blank" href="${b.whatsappUrl}">Открыть WhatsApp</a>`:'—'}</td><td><button class="btn primary" onclick="activate('${b.userId}','${b.id}',30)">Выдать 30 дней</button></td></tr>`).join('')||'<tr><td colspan="5">Нет invoice</td></tr>';document.getElementById('userRows').innerHTML=(data.users||[]).map(u=>`<tr><td><b>${u.email}</b><br>${u.name||''}</td><td><code>${u.id}</code></td><td>${statusTag(u.subscription.status)}</td><td>${u.subscription.currentPeriodEnd||u.subscription.trialEndsAt||'—'}</td><td><button class="btn primary" onclick="activate('${u.id}','',30)">+30 дней</button> <button class="btn danger" onclick="deactivate('${u.id}')">Отключить</button></td></tr>`).join('')||'<tr><td colspan="5">Нет пользователей</td></tr>';document.getElementById('recoveryRows').innerHTML=(data.recovery||[]).map(r=>`<tr><td>${new Date(r.createdAt).toLocaleString('ru-RU')}</td><td>${r.email||''}</td><td>${r.phone||''}</td><td>${r.comment||''}</td></tr>`).join('')||'<tr><td colspan="4">Нет заявок</td></tr>'}
+async function activate(userId,invoiceId,days){await adminApi('/api/admin/activate',{method:'POST',body:JSON.stringify({userId,invoiceId,days})});await loadOverview()}
+async function deactivate(userId){if(!confirm('Отключить доступ?'))return;await adminApi('/api/admin/deactivate',{method:'POST',body:JSON.stringify({userId})});await loadOverview()}
+async function activateManual(){await activate(document.getElementById('manualUserId').value,'',Number(document.getElementById('manualDays').value||30))}
+if(adminToken){document.getElementById('loginBox').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');loadOverview()}
+</script>
+</body>
+</html>

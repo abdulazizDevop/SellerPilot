@@ -1,0 +1,14 @@
+{
+  "name": "sellerpilot-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-директор для Ozon + Wildberries (демо). Backend-прокси к реальным Seller API.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

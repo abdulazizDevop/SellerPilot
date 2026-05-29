@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SellerPilot AI — Ozon + Wildberries</title>
+<style>
+:root{
+  --purple:#8b5cf6; --purple-dark:#6d28d9; --purple2:#c084fc; --pink:#ff4fd8; --blue:#2f7dff; --blue2:#00d4ff;
+  --bg:#080914; --bg2:rgba(16,18,35,.78); --bg3:rgba(255,255,255,.065); --card:rgba(20,22,42,.72);
+  --glass:rgba(255,255,255,.075); --glass2:rgba(255,255,255,.045); --border:rgba(255,255,255,.13);
+  --border2:rgba(139,92,246,.38); --text:#f4f6ff; --muted:#9aa3c7; --green:#20e58a; --red:#ff5c7a;
+  --orange:#ffb84d; --cyan:#3de7ff; --wb:#b84cff; --ozon:#1677ff; --shadow:0 24px 80px rgba(0,0,0,.38);
+  --radius:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;color:var(--text);font-family:Inter,Segoe UI,system-ui,-apple-system,Arial,sans-serif;
+  background:#080914;overflow-x:hidden;font-size:14px;
+}
+body::before{
+  content:"";position:fixed;inset:-25%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 15% 18%,rgba(139,92,246,.45) 0,transparent 28%),
+    radial-gradient(circle at 82% 12%,rgba(22,119,255,.38) 0,transparent 25%),
+    radial-gradient(circle at 70% 78%,rgba(255,79,216,.20) 0,transparent 24%),
+    radial-gradient(circle at 18% 86%,rgba(61,231,255,.18) 0,transparent 22%),
+    linear-gradient(135deg,#080914 0%,#10122a 52%,#090a16 100%);
+  filter:saturate(120%);animation:aurora 16s ease-in-out infinite alternate;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.38;
+  background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
+  background-size:46px 46px;mask-image:radial-gradient(circle at 50% 20%,#000 0,transparent 72%);
+}
+@keyframes aurora{0%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}100%{transform:translate3d(2%,1%,0) rotate(2deg) scale(1.04)}}
+button,input,select,textarea{font-family:inherit}button{user-select:none}select option{background:#15172b;color:var(--text)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-track{background:rgba(255,255,255,.04)}::-webkit-scrollbar-thumb{background:linear-gradient(var(--purple),var(--blue));border-radius:99px;border:2px solid rgba(0,0,0,.2)}
+#auth,#app{position:relative;z-index:1}
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+.auth-box{
+  width:460px;max-width:96vw;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(25,27,51,.82),rgba(15,17,34,.72));border:1px solid var(--border);
+  border-radius:28px;padding:42px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(24px);
+}
+.auth-box::before{content:"";position:absolute;inset:-1px;border-radius:28px;padding:1px;background:linear-gradient(135deg,rgba(192,132,252,.8),rgba(47,125,255,.18),rgba(61,231,255,.45));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.auth-box::after{content:"";position:absolute;width:190px;height:190px;border-radius:50%;right:-72px;top:-72px;background:radial-gradient(circle,rgba(139,92,246,.34),transparent 68%);pointer-events:none}.logo{position:relative;display:flex;align-items:center;gap:16px;margin-bottom:28px}.logo-icon{width:64px;height:64px;border-radius:22px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 18px 45px rgba(139,92,246,.38),inset 0 1px 0 rgba(255,255,255,.25)}.logo h1{font-size:28px;letter-spacing:-.5px}.logo p{color:var(--muted);font-size:13px;margin-top:4px}.field{margin-bottom:16px}.field label{display:flex;align-items:center;gap:6px;color:#b9c0de;font-size:11px;font-weight:850;margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em}.field input,.field select,.field textarea,.search{width:100%;background:rgba(9,11,25,.64);border:1px solid rgba(255,255,255,.13);border-radius:14px;color:var(--text);padding:13px 14px;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:border-color .2s,box-shadow .2s,background .2s}.field input:focus,.field select:focus,.field textarea:focus,.search:focus{border-color:rgba(139,92,246,.78);box-shadow:0 0 0 4px rgba(139,92,246,.13),inset 0 1px 0 rgba(255,255,255,.06);background:rgba(12,14,30,.78)}.hint{font-size:12px;color:var(--muted);line-height:1.55;margin-top:8px}.warnbox{position:relative;background:linear-gradient(135deg,rgba(255,184,77,.13),rgba(139,92,246,.08));border:1px solid rgba(255,184,77,.31);border-radius:17px;padding:13px 15px;color:#ffe2ad;font-size:12px;line-height:1.55;margin-bottom:18px}.btn{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,rgba(255,255,255,.085),rgba(255,255,255,.045));color:var(--text);border-radius:14px;padding:11px 15px;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s,background .18s;display:inline-flex;align-items:center;gap:8px;justify-content:center;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}.btn::after{content:"";position:absolute;inset:0;transform:translateX(-120%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transition:transform .55s}.btn:hover{border-color:rgba(139,92,246,.7);transform:translateY(-2px);box-shadow:0 16px 35px rgba(0,0,0,.22),0 0 0 4px rgba(139,92,246,.08)}.btn:hover::after{transform:translateX(120%)}.btn:active{transform:translateY(0)}.btn.primary{border:0;background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;box-shadow:0 16px 42px rgba(92,80,255,.34),inset 0 1px 0 rgba(255,255,255,.22)}.btn.danger{color:#ff8da1}.btn.small{font-size:12px;padding:8px 11px;border-radius:11px}.btn.full{width:100%;padding:14px 16px}.tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;border:1px solid rgba(255,255,255,.08);white-space:nowrap}.tag.wb{background:linear-gradient(135deg,rgba(184,76,255,.20),rgba(255,79,216,.10));color:#e8b8ff;border-color:rgba(184,76,255,.26)}.tag.ozon{background:linear-gradient(135deg,rgba(22,119,255,.22),rgba(61,231,255,.08));color:#9cc2ff;border-color:rgba(22,119,255,.30)}.tag.ok{background:rgba(32,229,138,.13);color:var(--green);border-color:rgba(32,229,138,.22)}.tag.warn{background:rgba(255,184,77,.14);color:var(--orange);border-color:rgba(255,184,77,.23)}.tag.err{background:rgba(255,92,122,.14);color:var(--red);border-color:rgba(255,92,122,.24)}.tag.info{background:rgba(61,231,255,.11);color:var(--cyan);border-color:rgba(61,231,255,.21)}
+#app{display:none;min-height:100vh}.sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:260px;background:linear-gradient(180deg,rgba(20,22,42,.78),rgba(11,13,28,.72));border:1px solid var(--border);border-radius:26px;display:flex;flex-direction:column;z-index:10;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(22px);overflow:hidden}.sidebar::before{content:"";position:absolute;left:0;right:0;top:0;height:130px;background:radial-gradient(circle at 50% 0,rgba(139,92,246,.28),transparent 68%);pointer-events:none}.brand{position:relative;height:78px;display:flex;align-items:center;gap:12px;padding:18px 18px;border-bottom:1px solid rgba(255,255,255,.09)}.brand .mark{width:44px;height:44px;border-radius:15px;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:950;letter-spacing:-.5px;box-shadow:0 14px 36px rgba(139,92,246,.31)}.brand b{font-size:17px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.nav{padding:13px 10px;flex:1;overflow:auto}.nav-title{color:#747da3;text-transform:uppercase;letter-spacing:.14em;font-size:10px;font-weight:900;padding:14px 13px 7px}.nav-item{position:relative;display:flex;align-items:center;gap:11px;color:#a6aed0;padding:12px 13px;border-radius:15px;cursor:pointer;margin:4px 0;transition:background .18s,color .18s,transform .18s}.nav-item:hover{background:rgba(255,255,255,.065);color:#fff;transform:translateX(2px)}.nav-item.active{background:linear-gradient(135deg,rgba(139,92,246,.24),rgba(22,119,255,.10));color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}.nav-item.active::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:99px;background:linear-gradient(var(--purple2),var(--cyan))}.nav-item span:first-child{width:22px;text-align:center;font-size:17px}.sidebar-foot{position:relative;border-top:1px solid rgba(255,255,255,.09);padding:14px}.connection{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);border-radius:17px;padding:13px;font-size:12px;color:var(--muted);line-height:1.45}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:7px;box-shadow:0 0 16px rgba(255,92,122,.75)}.dot.ok{background:var(--green);box-shadow:0 0 16px rgba(32,229,138,.75)}.main{margin-left:292px;min-height:100vh}.topbar{position:sticky;top:16px;margin:16px 16px 0;height:74px;background:linear-gradient(180deg,rgba(20,22,42,.78),rgba(14,16,32,.66));backdrop-filter:blur(22px);border:1px solid var(--border);border-radius:24px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;z-index:8;box-shadow:0 20px 60px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08)}.topbar h2{font-size:21px;letter-spacing:-.3px}.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.content{padding:22px 16px 32px}.page{display:none;animation:fadeUp .28s ease}.page.active{display:block}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.card{position:relative;background:linear-gradient(180deg,rgba(23,25,47,.78),rgba(15,17,34,.66));border:1px solid var(--border);border-radius:var(--radius);padding:19px;box-shadow:0 18px 48px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.07);backdrop-filter:blur(18px)}.card::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent 35%,rgba(139,92,246,.06));pointer-events:none}.stat{overflow:hidden;min-height:126px}.stat:after{content:"";position:absolute;right:-26px;top:-26px;width:118px;height:118px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.32),transparent 68%)}.stat:nth-child(2):after{background:radial-gradient(circle,rgba(22,119,255,.30),transparent 68%)}.stat:nth-child(3):after{background:radial-gradient(circle,rgba(255,184,77,.28),transparent 68%)}.stat:nth-child(4):after{background:radial-gradient(circle,rgba(61,231,255,.24),transparent 68%)}.stat .label{position:relative;font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.stat .value{position:relative;font-size:32px;font-weight:950;letter-spacing:-.8px}.stat .sub{position:relative;color:var(--muted);font-size:12px;margin-top:7px}.section{display:flex;align-items:center;justify-content:space-between;margin:25px 0 15px;gap:14px}.section h3{font-size:18px;letter-spacing:-.2px}.shop-card{cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}.shop-card:hover{border-color:rgba(139,92,246,.55);transform:translateY(-4px);box-shadow:0 28px 75px rgba(0,0,0,.32),0 0 0 4px rgba(139,92,246,.07)}.shop-head{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:13px}.shop-name{font-weight:950;font-size:15px;letter-spacing:-.2px}.shop-legal{font-size:12px;color:var(--muted);margin-top:5px}.mini-stats{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.mini{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.075);border-radius:15px;padding:11px}.mini div:first-child{font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em;font-weight:850}.mini div:last-child{font-size:17px;font-weight:950}.shop-actions{position:relative;display:flex;gap:8px;margin-top:14px}.shop-actions .btn{flex:1}.toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.search{min-width:230px}.table-wrap{position:relative;overflow:auto}.table-card{padding:0;overflow:hidden}table{width:100%;border-collapse:separate;border-spacing:0;min-width:860px}th{background:rgba(255,255,255,.055);color:#aab3d5;font-size:11px;text-align:left;padding:14px 15px;border-bottom:1px solid rgba(255,255,255,.10);text-transform:uppercase;letter-spacing:.07em}td{padding:14px 15px;border-bottom:1px solid rgba(255,255,255,.075);font-size:13px;color:#e9ecff}tr:last-child td{border-bottom:0}tr:hover td{background:rgba(139,92,246,.055)}.product-img{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(22,119,255,.12));border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}.ai-card{overflow:hidden;border-left:0}.ai-card::after{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--purple)}.ai-card.high::after{background:linear-gradient(var(--red),#ff9db0)}.ai-card.medium::after{background:linear-gradient(var(--orange),#ffe0a0)}.ai-card.low::after{background:linear-gradient(var(--cyan),#8cf2ff)}.ai-title{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:11px}.ai-title b{font-size:15px}.ai-card p{position:relative;color:#d7dcf5;font-size:13px;line-height:1.6}.ai-meta{position:relative;display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.modal-overlay{position:fixed;inset:0;background:rgba(3,5,14,.72);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px)}.modal-overlay.show{display:flex}.modal{width:590px;max-width:96vw;max-height:92vh;overflow:auto;background:linear-gradient(180deg,rgba(24,26,49,.94),rgba(12,14,29,.92));border:1px solid rgba(255,255,255,.14);border-radius:28px;padding:26px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.08);animation:modalIn .2s ease}@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.modal-head h3{font-size:19px;letter-spacing:-.3px}.close{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:var(--muted);font-size:22px;cursor:pointer;width:38px;height:38px;border-radius:13px}.close:hover{color:#fff;border-color:rgba(139,92,246,.6)}.row{display:grid;grid-template-columns:1fr 1fr;gap:13px}.market-fields{display:none}.market-fields.active{display:block}.settings-card{max-width:800px}.toast-box{position:fixed;right:22px;bottom:22px;z-index:200;display:flex;flex-direction:column;gap:9px}.toast{background:linear-gradient(180deg,rgba(24,26,49,.96),rgba(13,15,30,.94));border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:13px 16px;box-shadow:0 18px 50px rgba(0,0,0,.38);min-width:280px;font-size:13px;animation:toastIn .23s ease;backdrop-filter:blur(16px)}.toast.success{border-color:rgba(32,229,138,.45)}.toast.error{border-color:rgba(255,92,122,.50)}.toast.info{border-color:rgba(139,92,246,.50)}@keyframes toastIn{from{opacity:0;transform:translateX(34px) scale(.98)}to{opacity:1;transform:translateX(0) scale(1)}}.empty{color:var(--muted);text-align:center;padding:32px;font-size:14px}.code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#cbd1ff;font-size:12px}.banner{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(139,92,246,.24),rgba(22,119,255,.12),rgba(61,231,255,.08));border:1px solid rgba(139,92,246,.33);border-radius:24px;padding:20px;display:flex;justify-content:space-between;gap:18px;align-items:center;box-shadow:0 20px 60px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.08)}.banner::before{content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(61,231,255,.25),transparent 65%)}.banner b{position:relative;font-size:18px}.banner p{position:relative;color:#d9def7;font-size:13px;line-height:1.55;margin-top:5px;max-width:760px}.banner .btn{position:relative}.banner + .grid4{margin-top:20px}
+@media(max-width:1200px){.grid4{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:860px){body::after{opacity:.2}.sidebar{position:relative;left:auto;top:auto;bottom:auto;width:auto;margin:12px;border-radius:22px}.main{margin-left:0}.topbar{top:0;margin:12px;height:auto;min-height:72px;align-items:flex-start;gap:13px;flex-direction:column;padding:16px}.content{padding:12px 12px 28px}.grid4,.grid3,.grid2,.row{grid-template-columns:1fr}.section{align-items:flex-start;flex-direction:column}.banner{align-items:flex-start;flex-direction:column}.search{min-width:0;width:100%}.top-actions,.toolbar{width:100%}.top-actions .btn,.toolbar .search,.toolbar .btn{flex:1}.auth-box{padding:30px 22px;border-radius:24px}}
+
+
+
+/* ===== extra mobile adaptation: button groups and controls ===== */
+.btn{min-width:0;max-width:100%;text-align:center;white-space:normal;line-height:1.22;overflow-wrap:anywhere}.top-actions,.toolbar,.shop-actions,.row,.banner,.section,.modal,.card{min-width:0}.topbar{overflow:hidden}.search{max-width:100%}th,td{white-space:normal}.toast{max-width:calc(100vw - 24px)}
+@media(max-width:860px){
+  .top-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.top-actions>*{width:100%;min-width:0}.top-actions .tag{justify-content:center;text-align:center}.top-actions .btn{width:100%;padding-left:10px;padding-right:10px}.toolbar{display:grid;grid-template-columns:1fr;width:100%;gap:9px}.toolbar>*{width:100%;min-width:0}.section .btn,.banner .btn{width:100%}.banner{gap:14px}.shop-actions{display:grid;grid-template-columns:1fr 1fr 46px}.shop-actions .btn{width:100%;padding-left:8px;padding-right:8px}.modal .row{grid-template-columns:1fr}.row .btn{width:100%}.toast-box{left:12px;right:12px;bottom:12px}.toast{min-width:0;width:100%}#shopModalBody>div[style*="display:flex"]{flex-direction:column!important}#shopModalBody>div[style*="display:flex"] .btn{width:100%}
+}
+@media(max-width:560px){
+  .sidebar{margin:8px;border-radius:18px}.brand{height:auto;align-items:flex-start}.brand small{white-space:normal}.nav{padding:8px}.nav-item{padding:11px 10px}.topbar{margin:8px;border-radius:18px;padding:12px}.topbar h2{font-size:18px}.top-actions{grid-template-columns:1fr}.content{padding:8px 8px 24px}.banner{padding:15px;border-radius:18px}.card{padding:15px;border-radius:18px}.stats-grid,.grid4,.grid3,.grid2,.mini-stats{grid-template-columns:1fr}.shop-head{flex-direction:column}.shop-head>div:last-child{align-items:flex-start!important;flex-direction:row!important;flex-wrap:wrap}.shop-actions{grid-template-columns:1fr}.shop-actions .btn{min-height:42px}.table-card{border-radius:18px}.table-wrap{margin:0 -2px}.modal-overlay{padding:8px}.modal{width:100%;max-width:100%;border-radius:20px;padding:18px}.modal-head{gap:10px}.modal-head h3{font-size:17px}.field input,.field select,.field textarea,.search{padding:12px}.auth-box{width:100%;padding:24px 18px}.logo{align-items:flex-start}.logo h1{font-size:24px}.toast-box{left:8px;right:8px}.btn{width:100%}
+}
+@media(max-width:380px){.btn{font-size:13px;padding:11px 10px}.tag{font-size:10px}.mini{padding:9px}.mini div:last-child{font-size:15px}th,td{padding:10px 11px}.product-img{width:34px;height:34px}.modal{padding:15px}}
+
+
+
+.hero,.section,.cta,.footer,.main,.sidebar,.topbar,.auth-box{position:relative;z-index:1}
+/* ===== Behance-inspired motion design layer ===== */
+:root{--mx:50vw;--my:20vh;--motion-glow:rgba(139,92,246,.22)}
+body{cursor:default}
+body::before{animation:aurora 10s ease-in-out infinite alternate, hueFloat 18s linear infinite}
+@keyframes hueFloat{0%{filter:hue-rotate(0deg) saturate(120%)}50%{filter:hue-rotate(18deg) saturate(145%)}100%{filter:hue-rotate(0deg) saturate(120%)}}
+.motion-cursor{position:fixed;left:var(--mx);top:var(--my);width:380px;height:380px;border-radius:50%;pointer-events:none;z-index:0;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(139,92,246,.25),rgba(37,117,255,.12) 38%,transparent 68%);filter:blur(18px);mix-blend-mode:screen;opacity:.75;transition:opacity .25s}
+.noise-layer{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E")}
+.motion-rings{position:fixed;inset:auto -120px -120px auto;width:420px;height:420px;border-radius:50%;pointer-events:none;z-index:0;background:repeating-radial-gradient(circle,rgba(61,231,255,.18) 0 1px,transparent 1px 22px);mask-image:radial-gradient(circle,#000 0,transparent 70%);animation:spinSlow 28s linear infinite;opacity:.55}.motion-rings.left{inset:18% auto auto -160px;background:repeating-radial-gradient(circle,rgba(255,79,216,.16) 0 1px,transparent 1px 20px);animation-direction:reverse}.motion-orb{position:fixed;width:170px;height:170px;border-radius:42% 58% 60% 40%;pointer-events:none;z-index:0;background:linear-gradient(135deg,rgba(139,92,246,.34),rgba(61,231,255,.16));filter:blur(2px);opacity:.33;animation:morph 8s ease-in-out infinite alternate,floatOrb 11s ease-in-out infinite}.motion-orb.o1{left:8%;top:17%}.motion-orb.o2{right:12%;top:44%;width:110px;height:110px;background:linear-gradient(135deg,rgba(255,79,216,.30),rgba(37,117,255,.14));animation-delay:-3s}.motion-orb.o3{left:56%;bottom:10%;width:80px;height:80px;animation-delay:-6s}@keyframes spinSlow{to{transform:rotate(360deg)}}@keyframes morph{to{border-radius:58% 42% 38% 62%;transform:rotate(18deg) scale(1.08)}}@keyframes floatOrb{0%,100%{translate:0 0}50%{translate:18px -24px}}
+.nav,.topbar,.sidebar,.auth-box,.dash,.card,.modal,.cta-box,.banner{isolation:isolate}.nav::after,.topbar::after,.sidebar::after,.auth-box::after,.dash::after,.card::after,.modal::after,.cta-box::after,.banner::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.13) 18%,transparent 34%);transform:translateX(-120%);opacity:.0}.nav:hover::after,.topbar:hover::after,.sidebar:hover::after,.auth-box:hover::after,.dash:hover::after,.card:hover::after,.modal:hover::after,.cta-box:hover::after,.banner:hover::after{animation:sweep 1.05s ease;opacity:1}@keyframes sweep{to{transform:translateX(120%)}}
+.btn{transform-style:preserve-3d}.btn:hover{letter-spacing:.01em}.btn.primary{background-size:180% 180%;animation:buttonGradient 5s ease infinite}@keyframes buttonGradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.card,.dash,.mini,.task,.shop-card,.ai-card{transform-style:preserve-3d;will-change:transform}.card:hover,.shop-card:hover,.ai-card:hover{transform:translateY(-6px) rotateX(1.2deg) rotateY(-1.2deg)}.icon,.logo-icon,.mark,.brand .mark{animation:iconFloat 4.8s ease-in-out infinite}.icon:nth-child(2n){animation-delay:-1.8s}@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.grad{background-size:260% 100%;animation:textFlow 5s linear infinite}@keyframes textFlow{to{background-position:260% 0}}.kicker,.pill,.tag{position:relative;overflow:hidden}.kicker::after,.pill::after,.tag::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.20),transparent);transform:translateX(-120%);animation:chipSweep 4s ease-in-out infinite}.pill:nth-child(2)::after,.tag:nth-child(2)::after{animation-delay:.8s}.pill:nth-child(3)::after,.tag:nth-child(3)::after{animation-delay:1.5s}@keyframes chipSweep{0%,55%{transform:translateX(-130%)}78%,100%{transform:translateX(130%)}}
+.dash{animation:dashFloat 7s ease-in-out infinite}.bar{animation:barPulse 2.9s ease-in-out infinite;transform-origin:bottom}.bar:nth-child(2){animation-delay:.2s}.bar:nth-child(3){animation-delay:.4s}.bar:nth-child(4){animation-delay:.6s}.bar:nth-child(5){animation-delay:.8s}.bar:nth-child(6){animation-delay:1s}@keyframes dashFloat{0%,100%{translate:0 0}50%{translate:0 -12px}}@keyframes barPulse{0%,100%{scale:1 1;filter:saturate(1)}50%{scale:1 1.08;filter:saturate(1.35)}}
+.reveal{opacity:0;transform:translateY(28px) scale(.985);filter:blur(10px);transition:opacity .75s ease,transform .75s cubic-bezier(.2,.8,.2,1),filter .75s ease}.reveal.in-view{opacity:1;transform:none;filter:blur(0)}.reveal:nth-child(2){transition-delay:.06s}.reveal:nth-child(3){transition-delay:.12s}.reveal:nth-child(4){transition-delay:.18s}.reveal:nth-child(5){transition-delay:.24s}.reveal:nth-child(6){transition-delay:.30s}
+.section{position:relative}.section::before{content:"";position:absolute;left:50%;top:20px;width:min(760px,80vw);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(139,92,246,.5),rgba(61,231,255,.35),transparent);opacity:.55}.table-card table tr{transition:transform .18s ease,background .18s ease}.table-card table tr:hover{transform:scale(1.005)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.motion-cursor,.motion-rings,.motion-orb,.noise-layer{display:none!important}}
+@media(max-width:760px){.motion-cursor{display:none}.motion-orb{opacity:.18}.motion-rings{opacity:.24}.card:hover,.shop-card:hover,.ai-card:hover{transform:translateY(-2px)}.dash{animation:none}.nav:hover::after,.topbar:hover::after,.sidebar:hover::after,.auth-box:hover::after,.dash:hover::after,.card:hover::after,.modal:hover::after,.cta-box:hover::after,.banner:hover::after{animation:none}.reveal{transform:translateY(16px);filter:blur(4px)}}
+
+
+/* ===== FORCE VISIBLE MOTION REDESIGN v2 — Behance neon glass ===== */
+:root{--neon1:#7c3cff;--neon2:#00e5ff;--neon3:#ff3bd4;--deep:#03040c}
+html,body{background:#03040c!important}
+body{background-image:none!important}
+body::before{z-index:-3!important;background:radial-gradient(circle at var(--mx,50%) var(--my,20%),rgba(0,229,255,.22),transparent 22%),radial-gradient(circle at 12% 10%,rgba(124,60,255,.52),transparent 30%),radial-gradient(circle at 86% 18%,rgba(255,59,212,.38),transparent 24%),radial-gradient(circle at 54% 90%,rgba(0,229,255,.22),transparent 28%),linear-gradient(135deg,#03040c 0%,#09112a 45%,#050610 100%)!important;animation:aurora 8s ease-in-out infinite alternate,hueFloat 13s linear infinite!important}
+.motion-stage-strong{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}.motion-stage-strong .mesh{position:absolute;inset:-20%;background:conic-gradient(from 180deg at 50% 50%,rgba(124,60,255,.0),rgba(124,60,255,.45),rgba(0,229,255,.28),rgba(255,59,212,.32),rgba(124,60,255,.0));filter:blur(70px);opacity:.75;animation:meshSpin 12s linear infinite}.motion-stage-strong .beam{position:absolute;left:-20%;right:-20%;height:2px;top:28%;background:linear-gradient(90deg,transparent,var(--neon2),var(--neon3),transparent);box-shadow:0 0 22px var(--neon2),0 0 80px rgba(0,229,255,.45);transform:rotate(-9deg);animation:beamMove 4.8s ease-in-out infinite alternate}.motion-stage-strong .beam.b2{top:72%;transform:rotate(7deg);animation-delay:-2s;background:linear-gradient(90deg,transparent,var(--neon3),var(--neon1),transparent)}.motion-stage-strong .marquee{position:absolute;left:-10%;top:45%;white-space:nowrap;font-size:clamp(72px,13vw,190px);font-weight:1000;letter-spacing:-.08em;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.09);opacity:.62;animation:marqueeMotion 24s linear infinite}.motion-stage-strong .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,229,255,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(255,59,212,.08) 1px,transparent 1px);background-size:72px 72px;transform:perspective(700px) rotateX(58deg) translateY(24%);transform-origin:bottom;opacity:.20}@keyframes meshSpin{to{transform:rotate(360deg)}}@keyframes beamMove{to{translate:0 34px;opacity:.35}}@keyframes marqueeMotion{to{transform:translateX(-50%)}}
+.nav,.hero,.section,.cta,.footer,#auth,#app,.sidebar,.topbar,.main{position:relative!important;z-index:2!important}.nav,.topbar,.sidebar,.auth-box{border:1px solid rgba(0,229,255,.22)!important;background:linear-gradient(135deg,rgba(8,12,30,.74),rgba(16,8,34,.62))!important;box-shadow:0 20px 80px rgba(0,0,0,.48),0 0 0 1px rgba(255,255,255,.04),0 0 46px rgba(124,60,255,.16)!important}.brand .mark,.mark,.logo-icon{background:conic-gradient(from 160deg,var(--neon1),var(--neon2),var(--neon3),var(--neon1))!important;box-shadow:0 0 34px rgba(0,229,255,.34),0 0 55px rgba(124,60,255,.26)!important}.hero{min-height:calc(100vh - 90px);display:flex;align-items:center}.kicker{background:linear-gradient(90deg,rgba(0,229,255,.16),rgba(255,59,212,.12))!important;border-color:rgba(0,229,255,.38)!important;box-shadow:0 0 28px rgba(0,229,255,.14)!important}.hero h1,.title{filter:drop-shadow(0 12px 32px rgba(0,0,0,.45))}.hero h1{font-size:clamp(46px,7.4vw,96px)!important;line-height:.88!important}.grad{background:linear-gradient(90deg,#fff 0%,#7eeeff 22%,#b28cff 48%,#ff7ce5 70%,#fff 100%)!important;background-size:240% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;animation:textFlow 3.8s linear infinite!important}.hero p,.lead{color:#e0e7ff!important}.btn{border-color:rgba(255,255,255,.18)!important;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.22)!important}.btn.primary{background:linear-gradient(110deg,var(--neon1),var(--neon2),var(--neon3),var(--neon1))!important;background-size:260% 100%!important;animation:buttonGradient 2.8s ease infinite!important;box-shadow:0 0 28px rgba(0,229,255,.24),0 18px 48px rgba(124,60,255,.28)!important}.dash,.card,.cta-box,.banner,.modal,.mini,.task{background:linear-gradient(145deg,rgba(12,18,44,.72),rgba(31,12,48,.52))!important;border:1px solid rgba(255,255,255,.16)!important;box-shadow:0 24px 80px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.10),0 0 0 1px rgba(0,229,255,.05)!important;backdrop-filter:blur(22px) saturate(130%)!important}.dash,.card{outline:1px solid rgba(0,229,255,.08)}.dash::before,.card::before,.banner::before,.cta-box::before{background:radial-gradient(circle at 20% 0%,rgba(0,229,255,.16),transparent 34%),radial-gradient(circle at 90% 18%,rgba(255,59,212,.12),transparent 30%)!important}.dash{animation:dashFloat 4.6s ease-in-out infinite!important;transform:perspective(900px) rotateY(-7deg) rotateX(4deg)!important}.icon{background:conic-gradient(from 160deg,rgba(124,60,255,.72),rgba(0,229,255,.36),rgba(255,59,212,.52),rgba(124,60,255,.72))!important;box-shadow:0 0 30px rgba(0,229,255,.20)!important}.pill,.tag{background:rgba(255,255,255,.08)!important;border-color:rgba(0,229,255,.18)!important}.graph{background:linear-gradient(180deg,rgba(0,229,255,.08),rgba(124,60,255,.06))!important}.bar{box-shadow:0 0 22px rgba(0,229,255,.22)!important}.nav:before,.topbar:before{content:"";position:absolute;left:18px;right:18px;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--neon2),var(--neon3),transparent);opacity:.85}.section:nth-of-type(even) .card{background:linear-gradient(145deg,rgba(25,12,48,.72),rgba(8,28,48,.50))!important}
+/* app-specific stronger look */
+#app .content{background:radial-gradient(circle at 80% 0%,rgba(0,229,255,.06),transparent 30%)}#app .topbar h2:after{content:"  ✦ Motion AI";font-size:11px;color:var(--neon2);vertical-align:middle;margin-left:8px;letter-spacing:.12em;text-transform:uppercase}.sidebar .nav-item.active{background:linear-gradient(135deg,rgba(0,229,255,.18),rgba(255,59,212,.10))!important;box-shadow:0 0 28px rgba(0,229,255,.10)!important}.table-card{box-shadow:0 24px 80px rgba(0,0,0,.42),0 0 50px rgba(124,60,255,.08)!important}th{background:linear-gradient(90deg,rgba(0,229,255,.08),rgba(255,59,212,.055))!important;color:#c8f8ff!important}.ai-card.high{box-shadow:0 24px 80px rgba(0,0,0,.42),0 0 40px rgba(255,92,122,.10)!important}
+@media(max-width:760px){.motion-stage-strong .marquee{font-size:68px;top:42%}.motion-stage-strong .beam{opacity:.45}.hero{min-height:auto}.hero h1{font-size:clamp(34px,12vw,56px)!important;line-height:.96!important}.dash{transform:none!important}.card,.dash{box-shadow:0 16px 46px rgba(0,0,0,.38)!important}}
+@media(max-width:520px){.motion-stage-strong .grid{background-size:42px 42px}.motion-stage-strong .marquee{font-size:54px;opacity:.38}.motion-stage-strong .beam{display:none}.hero p,.lead{font-size:15px!important}.btn.primary{box-shadow:0 0 20px rgba(0,229,255,.18),0 12px 30px rgba(124,60,255,.22)!important}}
+
+
+.auth-tabs{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:-8px 0 18px}.auth-tabs button{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--muted);border-radius:14px;padding:11px;font-weight:900;cursor:pointer}.auth-tabs button.active{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;border-color:transparent;box-shadow:0 12px 32px rgba(92,80,255,.25)}
+.user-chip-top{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.auth-box .btn.full + .btn.full{background:rgba(255,255,255,.05)!important}
+.admin-recovery-footer{margin-top:14px;padding:12px;border:1px solid rgba(0,229,255,.24);background:rgba(0,229,255,.07);border-radius:14px;text-align:center;color:#dffaff;font-size:13px;line-height:1.45}.admin-recovery-footer b{font-size:18px;color:#fff;letter-spacing:.02em}
+@media(max-width:560px){.auth-tabs{grid-template-columns:1fr}.user-chip-top{max-width:none}}
+
+.today-board{margin-bottom:18px;background:linear-gradient(135deg,rgba(0,229,255,.14),rgba(124,60,255,.18),rgba(255,59,212,.08))!important}.today-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.today-list{display:grid;gap:10px;margin-top:14px}.today-task{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:rgba(255,255,255,.055)}.step-card.done{border-color:rgba(32,229,138,.35)!important}.step-num{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--neon1),var(--neon2));display:flex;align-items:center;justify-content:center;font-weight:950;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="auth">
+  <div class="auth-box">
+    <div class="logo"><div class="logo-icon">🛍️</div><div><h1>SellerPilot AI</h1><p>Регистрация, вход и восстановление доступа</p></div></div>
+    <div class="auth-tabs">
+      <button id="tabLogin" class="active" onclick="setAuthMode('login')">Вход</button>
+      <button id="tabRegister" onclick="setAuthMode('register')">Регистрация</button>
+      <button id="tabRecovery" onclick="setAuthMode('recovery')">Восстановить</button>
+    </div>
+    <div class="warnbox" id="authInfo">Введите email и пароль, чтобы войти в свой кабинет.</div>
+    <div class="field" id="nameField" style="display:none"><label>Имя / компания</label><input id="authName" placeholder="Напр. Иван или ООО Маркет" autocomplete="name" /></div>
+    <div class="field"><label>Email / логин</label><input id="loginEmail" type="email" placeholder="you@company.ru" autocomplete="email" /></div>
+    <div class="field" id="passwordField"><label>Пароль</label><input id="loginPass" type="password" placeholder="Минимум 6 символов" autocomplete="current-password" /></div>
+    <div class="field" id="pass2Field" style="display:none"><label>Повторите пароль</label><input id="loginPass2" type="password" placeholder="Ещё раз пароль" autocomplete="new-password" /></div>
+    <div class="field" id="recoveryPhoneField" style="display:none"><label>Телефон для связи</label><input id="recoveryPhone" placeholder="Ваш телефон" autocomplete="tel" /></div>
+    <div class="field" id="recoveryCommentField" style="display:none"><label>Как подтвердите личность</label><textarea id="recoveryComment" rows="3" placeholder="Например: ИНН/название ИП, магазины, последние подключённые кабинеты"></textarea></div>
+    <button class="btn primary full" id="authBtn" onclick="authSubmit()">🔐 Войти</button>
+    <button class="btn full" id="demoBtn" style="margin-top:10px" onclick="fillDemoAuth()">⚡ Заполнить тестовый аккаунт</button>
+    <button class="btn full" id="forgotBtn" style="margin-top:10px" onclick="setAuthMode('recovery')">🛟 Забыли пароль? Восстановить через администратора</button>
+    <div class="admin-recovery-footer">Восстановление доступа только через администратора после подтверждения личности:<br><b>📞 89382222453</b></div>
+    <div class="hint" style="text-align:center;margin-top:14px">После входа у каждого пользователя свои магазины, API-ключи, товары и AI-рекомендации.</div>
+  </div>
+</div>
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">MP</div><div><b>SellerPilot AI</b><small>AI-директор · live API</small></div></div>
+    <nav class="nav">
+      <div class="nav-title">Кабинет</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)"><span>📊</span>Дашборд</div>
+      <div class="nav-item" onclick="showPage('onboarding',this);renderOnboarding()"><span>⚡</span>Старт за 5 минут</div>
+      <div class="nav-item" onclick="showPage('shops',this)"><span>🏪</span>Магазины</div>
+      <div class="nav-title">Управление</div>
+      <div class="nav-item" onclick="showPage('products',this)"><span>📦</span>Товары</div>
+      <div class="nav-item" onclick="showPage('stocks',this)"><span>📈</span>Остатки</div>
+      <div class="nav-item" onclick="showPage('ai',this)"><span>🤖</span>AI-рекомендации</div>
+      <div class="nav-item" onclick="showPage('director',this);renderDirector(true)"><span>🚀</span>AI-центр 30</div>
+      <div class="nav-title">Система</div>
+      <div class="nav-item" onclick="showPage('settings',this)"><span>⚙️</span>Интеграции</div>
+    </nav>
+    <div class="sidebar-foot"><div class="connection"><div><span id="backendDot" class="dot"></span><b id="backendText">backend не проверен</b></div><div id="backendHint">Нажмите «Проверить» в настройках</div></div></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <h2 id="pageTitle">📊 Дашборд</h2>
+      <div class="top-actions">
+        <span class="tag info" id="clock">—</span>
+        <button class="btn" onclick="checkBackend(true)">🧪 Проверить API</button>
+        <button class="btn" onclick="refreshAll()">🔄 Синхронизировать</button>
+        <button class="btn primary" onclick="openAddShop()">+ Подключить Ozon/WB</button>
+        <span class="tag info user-chip-top" id="userChip">—</span>
+        <button class="btn" onclick="logout()">Выйти</button>
+      </div>
+    </header>
+    <div class="content">
+      <section class="page active" id="page-dashboard">
+        <div class="card today-board" id="todayBoard"></div>
+        <div class="banner"><div><b>AI-директор маркетплейсов</b><p>Добавьте токены WB и Ozon, синхронизируйте товары/остатки и получайте AI-рекомендации по пополнению, проблемным карточкам и действиям.</p></div><button class="btn primary" onclick="showPage('ai',document.querySelectorAll('.nav-item')[5])">🤖 Открыть AI-директора</button></div>
+        <div class="grid4" id="stats"></div>
+        <div class="section"><h3>🏪 Подключённые кабинеты</h3><button class="btn small" onclick="showPage('shops',document.querySelectorAll('.nav-item')[2])">Все →</button></div>
+        <div class="grid3" id="shopsGrid"></div>
+        <div class="section"><h3>⚠️ Требуют внимания</h3><button class="btn small" onclick="renderAI(true)">Обновить AI</button></div>
+        <div class="grid2" id="quickAi"></div>
+      </section>
+
+      <section class="page" id="page-onboarding">
+        <div class="section"><h3>⚡ Подключение Ozon/WB за 5 минут</h3><button class="btn primary" onclick="renderOnboarding()">Обновить шаги</button></div>
+        <div class="banner"><div><b>Быстрый старт</b><p>Пройдите 5 шагов: тариф, Ozon/WB API, себестоимость, Telegram и синхронизация. После этого AI-директор начнёт выдавать задачи.</p></div></div>
+        <div class="grid2" id="onboardingGrid"></div>
+      </section>
+      <section class="page" id="page-shops">
+        <div class="section"><h3>🏪 Магазины Ozon и Wildberries</h3><button class="btn primary" onclick="openAddShop()">+ Добавить</button></div>
+        <div class="grid3" id="shopsGridFull"></div>
+      </section>
+      <section class="page" id="page-products">
+        <div class="card table-card">
+          <div class="section" style="padding:16px 18px;margin:0;border-bottom:1px solid var(--border)"><h3>📦 Все товары</h3><div class="toolbar"><input id="productSearch" class="search" placeholder="Поиск: название / артикул" oninput="renderProducts()"/><select id="mpFilter" class="search" style="min-width:150px" onchange="renderProducts()"><option value="all">Все МП</option><option value="wb">Wildberries</option><option value="ozon">Ozon</option></select></div></div>
+          <div class="table-wrap"><table><thead><tr><th>МП</th><th>Товар</th><th>Артикул</th><th>Цена</th><th>Остаток</th><th>Магазин</th><th>Статус</th><th>Действие</th></tr></thead><tbody id="productsTable"></tbody></table></div>
+        </div>
+      </section>
+      <section class="page" id="page-stocks">
+        <div class="card table-card">
+          <div class="section" style="padding:16px 18px;margin:0;border-bottom:1px solid var(--border)"><h3>📈 Управление остатками</h3><div class="toolbar"><select id="stockShop" class="search" onchange="renderStocks()"><option value="all">Все магазины</option></select></div></div>
+          <div class="table-wrap"><table><thead><tr><th>МП</th><th>Артикул</th><th>Товар</th><th>Магазин</th><th>Остаток</th><th>Обновлено</th><th>Отправить в МП</th></tr></thead><tbody id="stocksTable"></tbody></table></div>
+        </div>
+      </section>
+      <section class="page" id="page-ai">
+        <div class="section"><h3>🤖 AI-рекомендации</h3><div class="toolbar"><select id="aiShop" class="search" onchange="renderAI(true)"><option value="all">Все магазины</option></select><button class="btn primary" onclick="renderAI(true)">Сгенерировать</button></div></div>
+        <div class="banner"><div><b>Как работает AI</b><p>Backend сначала строит рекомендации по фактическим данным Ozon/WB. Если в <span class="code">server.js</span> задан OpenAI-compatible ключ, можно подключить LLM; иначе работает безопасный rule-based анализ.</p></div></div>
+        <div class="grid2" id="aiGrid"></div>
+      </section>
+
+      <section class="page" id="page-director">
+        <div class="section"><h3>🚀 AI-центр: 30 модулей роста</h3><div class="toolbar"><button class="btn primary" onclick="renderDirector(true)">Обновить 30 модулей</button><button class="btn" onclick="downloadWeeklyReport()">📄 Скачать отчёт</button></div></div>
+        <div class="banner"><div><b>Только seller API</b><p>Здесь нет парсинга конкурентов и MPStats-подобной публичной аналитики. Gemini используется только для чата, красивого отчёта, генерации карточек и ответов на отзывы.</p></div></div>
+        <div class="grid2" style="margin-top:16px">
+          <div class="card"><h3 style="margin-bottom:12px">💬 Gemini-чат директора</h3><div class="field"><label>Вопрос</label><input id="aiChatQuestion" placeholder="Например: что сегодня срочно?"/></div><button class="btn primary" onclick="askAiChat()">Спросить</button><div class="hint" id="aiChatAnswer" style="white-space:pre-wrap;margin-top:12px">Ответ появится здесь.</div></div>
+          <div class="card"><h3 style="margin-bottom:12px">📝 Gemini-карточка / отзыв</h3><div class="field"><label>Артикул для карточки</label><input id="aiCardArticle" placeholder="WB-1001"/></div><button class="btn" onclick="generateAiCard()">Сгенерировать карточку</button><div class="field" style="margin-top:12px"><label>Отзыв для ответа</label><textarea id="aiReviewText" rows="3" placeholder="Текст отзыва клиента"></textarea></div><button class="btn" onclick="generateReviewReply()">Ответить на отзыв</button><div class="hint" id="aiGenResult" style="white-space:pre-wrap;margin-top:12px">Результат появится здесь.</div></div>
+        </div>
+        <div class="grid3" id="directorSummary"></div>
+        <div class="grid2" id="directorGrid" style="margin-top:16px"></div>
+      </section>
+      <section class="page" id="page-settings">
+        <div class="card settings-card">
+          <h3 style="margin-bottom:16px">⚙️ Настройки интеграций</h3>
+          <div class="field"><label>Backend API URL</label><input id="apiBase" placeholder="Оставьте пустым для текущего домена: /api"/><div class="hint">Если запускаете локально: <span class="code">http://localhost:8787</span>. В продакшене — домен вашего backend-прокси.</div></div>
+          <div class="row"><button class="btn" onclick="saveSettings()">💾 Сохранить</button><button class="btn primary" onclick="checkBackend(true)">🧪 Проверить соединение</button></div>
+          <div class="card" id="billingBox" style="margin-top:18px"><h3>💳 Тариф Start — 1 000 ₽/мес</h3><p class="hint">Загрузка тарифа...</p></div>
+          <div class="field" style="margin-top:18px"><label>Себестоимость для AI-маржи</label><textarea id="costsText" rows="5" placeholder="Артикул; себестоимость; упаковка; логистика; налог%; реклама/ед.&#10;WB-1001; 1200; 30; 120; 6; 50&#10;OZ-2001; 1400; 30; 140; 6; 70"></textarea><div class="hint">AI-детектор прибыли использует эти данные, чтобы находить убыточные товары.</div></div>
+          <button class="btn primary" onclick="saveCostsFromText()">💰 Сохранить себестоимость</button>
+          <div class="card" style="margin-top:18px">
+            <h3 style="margin-bottom:14px">📲 Telegram-бот AI-директора</h3>
+            <div class="field"><label>Bot Token</label><input id="tgBotToken" type="password" placeholder="123456789:AA..."/><div class="hint" id="tgTokenHint">Создайте бота через @BotFather и вставьте токен. Токен хранится на backend и показывается только маской.</div></div>
+            <div class="row"><div class="field"><label>Chat ID</label><input id="tgChatId" placeholder="Напр. 123456789"/></div><div class="field"><label>Время отчёта</label><input id="tgReportTime" type="time" value="09:00"/></div></div>
+            <div class="row"><div class="field"><label>Часовой пояс</label><select id="tgTimezone"><option>Europe/Moscow</option><option>Asia/Almaty</option><option>Europe/London</option><option>Asia/Dubai</option></select></div><div class="field"><label>Ежедневный отчёт</label><select id="tgEnabled"><option value="true">Включён</option><option value="false">Выключен</option></select></div></div>
+            <div class="hint">Как узнать chat_id: напишите своему боту любое сообщение, затем откройте https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates и возьмите chat.id.</div>
+            <div class="row" style="margin-top:12px"><button class="btn primary" onclick="saveTelegramSettings()">💾 Сохранить Telegram</button><button class="btn" onclick="testTelegramReport()">📨 Отправить тест</button></div>
+            <div class="hint" id="tgStatus" style="margin-top:10px">Telegram не настроен.</div>
+          </div>
+          <div class="warnbox" style="margin-top:18px;margin-bottom:0">API-ключи маркетплейсов нельзя отправлять напрямую из браузера в Ozon/WB: CORS и риск утечки. Для настоящей работы используйте <span class="code">server.js</span>.</div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="modal-overlay" id="addShopModal"><div class="modal">
+  <div class="modal-head"><h3>🏪 Подключить кабинет маркетплейса</h3><button class="close" onclick="closeModal('addShopModal')">×</button></div>
+  <div class="row"><div class="field"><label>Маркетплейс</label><select id="newMarketplace" onchange="toggleMarketFields()"><option value="wb">Wildberries</option><option value="ozon">Ozon</option></select></div><div class="field"><label>Название</label><input id="newShopName" placeholder="Напр. WB — одежда"/></div></div>
+  <div class="field"><label>Юр. лицо / ИП</label><input id="newShopLegal" placeholder="ИП Иванов И.И."/></div>
+  <div id="wbFields" class="market-fields active">
+    <div class="field"><label>WB API token</label><input id="wbToken" type="password" placeholder="eyJhbGciOi..."/><div class="hint">ЛК WB → Настройки → Доступ к API. Желательно токен с категориями Content, Statistics, Prices & Stocks, Marketplace.</div></div>
+    <div class="field"><label>WB Warehouse ID для изменения остатков (опционально)</label><input id="wbWarehouseId" placeholder="Напр. 123456"/></div>
+  </div>
+  <div id="ozonFields" class="market-fields">
+    <div class="row"><div class="field"><label>Ozon Client-Id</label><input id="ozonClientId" placeholder="123456"/></div><div class="field"><label>Ozon Api-Key</label><input id="ozonApiKey" type="password" placeholder="xxxxxxxx-xxxx-..."/></div></div>
+  </div>
+  <div class="row"><button class="btn" onclick="closeModal('addShopModal')">Отмена</button><button class="btn primary" onclick="addShop()">✅ Подключить и проверить</button></div>
+</div></div>
+<div class="modal-overlay" id="shopModal"><div class="modal"><div class="modal-head"><h3 id="shopModalTitle">Магазин</h3><button class="close" onclick="closeModal('shopModal')">×</button></div><div id="shopModalBody"></div></div></div>
+<div class="toast-box" id="toasts"></div>
+<script>
+const DEMO_SHOPS=[
+  {id:'demo-wb',marketplace:'wb',name:'WB · Demo',legal:'ИП Смирнов А.В.',status:'warn',products:4,active:3,stock:42,revenue:0,lastSync:null,demo:true},
+  {id:'demo-ozon',marketplace:'ozon',name:'Ozon · Demo',legal:'ООО Омега',status:'ok',products:4,active:4,stock:86,revenue:0,lastSync:null,demo:true}
+];
+const DEMO_PRODUCTS=[
+  {id:'wb:101',shopId:'demo-wb',marketplace:'wb',shopName:'WB · Demo',name:'Кроссовки Air Force',article:'WB-1001',price:2490,stock:0,status:'no-stock',updated:'2026-05-26',emoji:'👟'},
+  {id:'wb:102',shopId:'demo-wb',marketplace:'wb',shopName:'WB · Demo',name:'Платье летнее',article:'WB-1002',price:1990,stock:3,status:'active',updated:'2026-05-26',emoji:'👗'},
+  {id:'wb:103',shopId:'demo-wb',marketplace:'wb',shopName:'WB · Demo',name:'Рюкзак городской',article:'WB-1003',price:3290,stock:0,status:'inactive',updated:'2026-05-25',emoji:'🎒'},
+  {id:'wb:104',shopId:'demo-wb',marketplace:'wb',shopName:'WB · Demo',name:'Кепка бейсбол',article:'WB-1004',price:790,stock:39,status:'active',updated:'2026-05-25',emoji:'🧢'},
+  {id:'ozon:201',shopId:'demo-ozon',marketplace:'ozon',shopName:'Ozon · Demo',name:'Кроссовки Air Force',article:'OZ-2001',price:2590,stock:12,status:'active',updated:'2026-05-26',emoji:'👟'},
+  {id:'ozon:202',shopId:'demo-ozon',marketplace:'ozon',shopName:'Ozon · Demo',name:'Часы классика',article:'OZ-2002',price:5490,stock:2,status:'active',updated:'2026-05-26',emoji:'⌚'},
+  {id:'ozon:203',shopId:'demo-ozon',marketplace:'ozon',shopName:'Ozon · Demo',name:'Сумка шоппер',article:'OZ-2003',price:1490,stock:72,status:'active',updated:'2026-05-25',emoji:'👜'},
+  {id:'ozon:204',shopId:'demo-ozon',marketplace:'ozon',shopName:'Ozon · Demo',name:'Помада матовая',article:'OZ-2004',price:690,stock:0,status:'no-stock',updated:'2026-05-24',emoji:'💄'}
+];
+let state={shops:[...DEMO_SHOPS],products:[...DEMO_PRODUCTS],backend:false,apiBase:localStorage.getItem('apiBase')||'',authToken:localStorage.getItem('authToken')||'',user:null,authMode:'login',clockStarted:false,insights:null,intelligence:null,billing:null};
+const mp={wb:{label:'Wildberries',tag:'wb',icon:'🟣'},ozon:{label:'Ozon',tag:'ozon',icon:'🔵'}};
+function $(id){return document.getElementById(id)}
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function fmt(n){return Number(n||0).toLocaleString('ru-RU')}
+function money(n){return '₽'+fmt(n||0)}
+function apiUrl(path){const base=(state.apiBase||'').replace(/\/$/,'');return base?base+path:path}
+async function api(path,opts={}){const headers={'Content-Type':'application/json',...(opts.headers||{})}; if(state.authToken) headers.Authorization='Bearer '+state.authToken; const res=await fetch(apiUrl(path),{...opts,headers});const txt=await res.text();let data={};try{data=txt?JSON.parse(txt):{}}catch(e){data={raw:txt}}if(!res.ok)throw new Error(data.error||data.message||('HTTP '+res.status));return data}
+function setAuthMode(mode){
+  state.authMode=mode;
+  $('tabLogin').classList.toggle('active',mode==='login');
+  $('tabRegister').classList.toggle('active',mode==='register');
+  $('tabRecovery').classList.toggle('active',mode==='recovery');
+  $('nameField').style.display=(mode==='register'||mode==='recovery')?'block':'none';
+  $('passwordField').style.display=mode==='recovery'?'none':'block';
+  $('pass2Field').style.display=mode==='register'?'block':'none';
+  $('recoveryPhoneField').style.display=mode==='recovery'?'block':'none';
+  $('recoveryCommentField').style.display=mode==='recovery'?'block':'none';
+  $('demoBtn').style.display=mode==='recovery'?'none':'inline-flex';
+  $('forgotBtn').style.display=mode==='recovery'?'none':'inline-flex';
+  $('authBtn').textContent=mode==='register'?'✨ Зарегистрироваться':mode==='recovery'?'🛟 Отправить заявку администратору':'🔐 Войти';
+  $('authInfo').innerHTML=mode==='register'?'Создайте логин и пароль. После регистрации сможете подключить Ozon/WB кабинеты.':mode==='recovery'?'Восстановление пароля идёт через администратора. Отправьте заявку и подтвердите личность по телефону <b>89382222453</b>.':'Введите email и пароль, чтобы войти в свой кабинет.';
+}
+function fillDemoAuth(){ setAuthMode('register'); $('loginEmail').value='demo+'+Date.now()+'@sellerpilot.ai'; $('loginPass').value='demo123'; if($('loginPass2')) $('loginPass2').value='demo123'; if($('authName')) $('authName').value='Demo Seller'; }
+async function authSubmit(){
+  const email=$('loginEmail').value.trim().toLowerCase(), password=$('loginPass').value, name=$('authName')?.value.trim()||'';
+  try{
+    if(state.authMode==='recovery'){
+      const phone=$('recoveryPhone').value.trim(), comment=$('recoveryComment').value.trim();
+      if(!email&&!phone){toast('Укажите email или телефон аккаунта','error');return}
+      const data=await api('/api/auth/recovery-request',{method:'POST',body:JSON.stringify({email,name,phone,comment})});
+      toast(data.message+' Админ: '+data.adminPhone,'success');
+      $('authInfo').innerHTML='Заявка отправлена. Для подтверждения личности свяжитесь с администратором: <b>'+data.adminPhone+'</b>';
+      return;
+    }
+    if(!email||password.length<6){toast('Введите email и пароль минимум 6 символов','error');return}
+    let data;
+    if(state.authMode==='register'){
+      if(password!==$('loginPass2').value){toast('Пароли не совпадают','error');return}
+      data=await api('/api/auth/register',{method:'POST',body:JSON.stringify({email,password,name})}); toast('Аккаунт создан','success')
+    }else{
+      data=await api('/api/auth/login',{method:'POST',body:JSON.stringify({email,password})}); toast('Вход выполнен','success')
+    }
+    state.authToken=data.token; state.user=data.user; localStorage.setItem('authToken',state.authToken); enterApp();
+  }catch(e){toast(e.message,'error')}
+}
+function enterApp(){ $('auth').style.display='none'; $('app').style.display='block'; $('userChip').textContent=state.user?.email||'аккаунт'; init(); }
+async function bootAuth(){const params=new URLSearchParams(location.search); if(params.get('auth')==='register') setAuthMode('register'); if(params.get('email')) $('loginEmail').value=params.get('email'); if(!state.authToken) return; try{const data=await api('/api/auth/me'); state.user=data.user; enterApp();}catch(e){localStorage.removeItem('authToken'); state.authToken='';}}
+async function logout(){try{await api('/api/auth/logout',{method:'POST'});}catch(e){} localStorage.removeItem('authToken'); state.authToken=''; state.user=null; state.shops=[...DEMO_SHOPS]; state.products=[...DEMO_PRODUCTS]; $('app').style.display='none'; $('auth').style.display='flex'; setAuthMode('login');}
+function login(){authSubmit()}
+function init(){ $('apiBase').value=state.apiBase; tick(); if(!state.clockStarted){setInterval(tick,1000); state.clockStarted=true;} renderAll(); checkBackend(false); loadBillingStatus(); loadDashboard(); loadTelegramSettings(); renderAI(false); renderOnboarding(); }
+function tick(){ $('clock').textContent=new Date().toLocaleString('ru-RU'); }
+function showPage(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$('page-'+id).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));if(el)el.classList.add('active');const titles={dashboard:'📊 Дашборд',onboarding:'⚡ Старт за 5 минут',shops:'🏪 Магазины',products:'📦 Все товары',stocks:'📈 Остатки',ai:'🤖 AI-рекомендации',director:'🚀 AI-центр 30',settings:'⚙️ Интеграции'};$('pageTitle').textContent=titles[id]||id;if(id==='ai')renderAI(false)}
+function renderAll(){renderStats();renderShops();renderProducts();renderStocks();fillSelects();renderTodayBoard();}
+
+function renderTodayBoard(){
+  const el=$('todayBoard'); if(!el)return;
+  const tasks=(state.insights?.tasks||[]).slice(0,5);
+  const loss=state.insights?.estimatedLoss7d||0;
+  let body='';
+  if(tasks.length){
+    body=tasks.map((t,i)=>'<div class="today-task"><div><b>'+(i+1)+'. '+escapeHtml(t.title)+'</b><div style="color:var(--muted);font-size:12px;margin-top:4px">'+escapeHtml(t.text||'')+'</div></div><div style="text-align:right"><span class="tag '+(t.priority==='high'?'err':t.priority==='medium'?'warn':'info')+'">'+money(t.moneyImpact||0)+'</span><br><button class="btn small" style="margin-top:8px" onclick="showPage(\'ai\',document.querySelectorAll(\'.nav-item\')[5])">Открыть</button></div></div>').join('');
+  } else {
+    body='<div class="today-task"><div><b>Критичных задач нет</b><div style="color:var(--muted);font-size:12px;margin-top:4px">Подключите магазины и синхронизируйте seller API, чтобы AI нашёл задачи.</div></div><button class="btn small primary" onclick="showPage(\'onboarding\',document.querySelectorAll(\'.nav-item\')[1]);renderOnboarding()">Старт</button></div>';
+  }
+  el.innerHTML='<div class="today-head"><div><h2 style="margin-bottom:6px">🔥 Что сделать сегодня</h2><p style="color:var(--muted)">AI-директор показывает главные действия, чтобы не терять деньги.</p></div><div class="tag warn">Потери 7д: '+money(loss)+'</div></div><div class="today-list">'+body+'</div>';
+}
+async function loadBillingStatus(){if(!state.authToken)return;try{const data=await api('/api/billing/status');state.billing=data;renderOnboarding();renderBillingBox();}catch(e){}}
+async function startSubscription(){try{const data=await api('/api/billing/subscribe',{method:'POST',body:JSON.stringify({plan:'start'})});await loadBillingStatus();if(data.confirmationUrl){location.href=data.confirmationUrl}else if(data.whatsappUrl){toast('Открыл WhatsApp для оплаты','info');window.open(data.whatsappUrl,'_blank')}else{toast(data.message||'Счёт создан','info')}}catch(e){toast('Ошибка оплаты: '+e.message,'error')}}
+function renderBillingBox(){const el=$('billingBox'); if(!el||!state.billing)return; const s=state.billing.subscription; el.innerHTML='<h3 style="margin-bottom:12px">💳 Тариф Start — 1 000 ₽/мес</h3><p style="color:var(--muted);line-height:1.5">До 300 SKU, Ozon + WB, AI-задачи, потери за 7 дней, Health Score, Telegram-отчёт.</p><div class="ai-meta" style="margin:12px 0"><span class="tag '+(s.active?'ok':'warn')+'">'+s.status+'</span><span class="tag info">'+s.paymentProvider+'</span><span class="tag info">'+state.billing.plan.trialDays+' дней бесплатно</span></div><button class="btn primary" onclick="startSubscription()">Оплатить 1 000 ₽/мес</button>';}
+function renderOnboarding(){
+  const el=$('onboardingGrid'); if(!el)return;
+  const hasOzon=state.shops.some(s=>s.marketplace==='ozon');
+  const hasWb=state.shops.some(s=>s.marketplace==='wb');
+  const hasCosts=Boolean(state.insights&&state.insights.counters?.products&&state.insights.counters?.noCost<state.insights.counters?.products);
+  const hasTelegram=Boolean($('tgChatId')?.value);
+  const paid=Boolean(state.billing?.subscription?.active);
+  const settingsClick="showPage('settings',document.querySelectorAll('.nav-item')[7])";
+  const steps=[
+    ['Тариф Start',paid,'7 дней бесплатно, потом 1 000 ₽/мес','startSubscription()','Подключить тариф'],
+    ['Подключить Ozon',hasOzon,'Client-Id + Api-Key из кабинета Ozon Seller','openAddShop()','Добавить Ozon'],
+    ['Подключить Wildberries',hasWb,'WB API token с правами Content/Statistics/Prices','openAddShop()','Добавить WB'],
+    ['Себестоимость',hasCosts,'Загрузите артикул; себестоимость для unit-экономики',settingsClick,'Добавить расходы'],
+    ['Telegram-директор',hasTelegram,'Ежедневный отчёт в выбранное время',settingsClick,'Настроить Telegram'],
+    ['Синхронизация',Boolean(state.shops.length&&state.products.length),'Получить товары, заказы, остатки и AI-задачи','refreshAll()','Синхронизировать']
+  ];
+  el.innerHTML=steps.map((x,i)=>'<div class="card step-card '+(x[1]?'done':'')+'"><div class="step-num">'+(x[1]?'✓':i+1)+'</div><h3>'+escapeHtml(x[0])+'</h3><p>'+escapeHtml(x[2])+'</p><button class="btn '+(x[1]?'':'primary')+'" style="margin-top:14px" onclick="'+x[3]+'">'+(x[1]?'Готово':escapeHtml(x[4]))+'</button></div>').join('');
+}
+
+function renderStats(){const ins=state.insights;const active=state.shops.filter(s=>s.status!=='err').length,totalP=state.products.length,low=ins?((ins.counters?.noStock||0)+(ins.counters?.lowStock||0)+(ins.counters?.inactive||0)):state.products.filter(p=>Number(p.stock)<=5||p.status!=='active').length,wb=state.shops.filter(s=>s.marketplace==='wb').length,oz=state.shops.filter(s=>s.marketplace==='ozon').length;const health=ins?.healthScore??100;const loss=ins?.estimatedLoss??0;$('stats').innerHTML=`
+  <div class="card stat"><div class="label">Health Score магазина</div><div class="value">${health}/100</div><div class="sub">${health>=80?'здоровый кабинет':health>=55?'есть риски':'нужны срочные действия'} · WB ${wb} · Ozon ${oz}</div></div>
+  <div class="card stat"><div class="label">Товаров в кабинете</div><div class="value">${fmt(totalP)}</div><div class="sub">${active} активных кабинетов</div></div>
+  <div class="card stat"><div class="label">AI-задач / проблем</div><div class="value">${fmt(ins?.tasks?.length||low)}</div><div class="sub">нет остатков / маржа / карточки</div></div>
+  <div class="card stat"><div class="label">Потери за 7 дней</div><div class="value">${money(loss)}</div><div class="sub">прогноз 14 дн: ${money(ins?.estimatedLoss14d||0)}</div></div>`;}
+function shopCard(s){return `<div class="card shop-card" onclick="openShop('${s.id}')"><div class="shop-head"><div><div class="shop-name">${escapeHtml(s.name)}</div><div class="shop-legal">${escapeHtml(s.legal||'—')}</div></div><div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end"><span class="tag ${mp[s.marketplace]?.tag||'info'}">${mp[s.marketplace]?.icon||'•'} ${mp[s.marketplace]?.label||s.marketplace}</span><span class="tag ${s.status==='ok'?'ok':s.status==='warn'?'warn':'err'}">${s.status==='ok'?'активен':s.status==='warn'?'внимание':'ошибка'}</span></div></div><div class="mini-stats"><div class="mini"><div>Товары</div><div>${fmt(s.products)}</div></div><div class="mini"><div>Активные</div><div style="color:var(--green)">${fmt(s.active)}</div></div><div class="mini"><div>Остатки</div><div>${fmt(s.stock)}</div></div><div class="mini"><div>Синхр.</div><div style="font-size:12px">${s.lastSync?new Date(s.lastSync).toLocaleString('ru-RU'):(s.demo?'demo':'—')}</div></div></div><div class="shop-actions"><button class="btn small primary" onclick="event.stopPropagation();syncShop('${s.id}')">🔄 Sync</button><button class="btn small" onclick="event.stopPropagation();showPage('products',document.querySelectorAll('.nav-item')[3]);$('productSearch').value='';$('mpFilter').value='${s.marketplace}';renderProducts('${s.id}')">📦 Товары</button><button class="btn small danger" onclick="event.stopPropagation();removeShop('${s.id}')">🗑️</button></div></div>`}
+function renderShops(){const html=state.shops.map(shopCard).join('')||'<div class="empty card">Нет магазинов. Подключите Ozon или WB.</div>';$('shopsGrid').innerHTML=html;$('shopsGridFull').innerHTML=html;renderStats()}
+function renderProducts(shopOnly){const q=($('productSearch')?.value||'').toLowerCase();const m=$('mpFilter')?.value||'all';let data=state.products;if(shopOnly)data=data.filter(p=>p.shopId===shopOnly);if(m!=='all')data=data.filter(p=>p.marketplace===m);if(q)data=data.filter(p=>(p.name+' '+p.article).toLowerCase().includes(q));$('productsTable').innerHTML=data.map(productRow).join('')||'<tr><td colspan="8" class="empty">Нет товаров. Выполните синхронизацию магазина.</td></tr>';}
+function productRow(p){return `<tr><td><span class="tag ${mp[p.marketplace]?.tag}">${mp[p.marketplace]?.label}</span></td><td><div style="display:flex;align-items:center;gap:9px"><div class="product-img">${p.emoji||'📦'}</div><b>${escapeHtml(p.name||'Без названия')}</b></div></td><td class="code">${escapeHtml(p.article||p.offer_id||p.externalId||'—')}</td><td>${p.price?money(p.price):'—'}</td><td>${Number(p.stock)>5?'<b style="color:var(--green)">'+fmt(p.stock)+'</b>':Number(p.stock)>0?'<b style="color:var(--orange)">'+fmt(p.stock)+'</b>':'<b style="color:var(--red)">0</b>'}</td><td>${escapeHtml(p.shopName||'—')}</td><td><span class="tag ${p.status==='active'?'ok':p.status==='no-stock'?'warn':'err'}">${p.status==='active'?'активен':p.status==='no-stock'?'нет остатка':'неактивен'}</span></td><td><button class="btn small" onclick="editProduct('${p.id}')">✏️</button></td></tr>`}
+function renderStocks(){const sel=$('stockShop')?.value||'all';let data=state.products;if(sel!=='all')data=data.filter(p=>p.shopId===sel);$('stocksTable').innerHTML=data.map(p=>`<tr><td><span class="tag ${mp[p.marketplace]?.tag}">${mp[p.marketplace]?.label}</span></td><td class="code">${escapeHtml(p.article||'—')}</td><td>${escapeHtml(p.name||'—')}</td><td>${escapeHtml(p.shopName||'—')}</td><td><input id="stock-${cssId(p.id)}" type="number" min="0" value="${Number(p.stock||0)}" style="width:90px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px"></td><td>${p.updated||'—'}</td><td><button class="btn small primary" onclick="saveStock('${p.id}')">💾 Отправить</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">Нет товаров</td></tr>';}
+function cssId(s){return String(s).replace(/[^a-zA-Z0-9_-]/g,'_')}
+function fillSelects(){['stockShop','aiShop'].forEach(id=>{const sel=$(id); if(!sel)return; const val=sel.value||'all'; sel.innerHTML='<option value="all">Все магазины</option>'+state.shops.map(s=>`<option value="${s.id}">${escapeHtml(s.name)} · ${mp[s.marketplace]?.label}</option>`).join(''); sel.value=state.shops.some(s=>s.id===val)?val:'all';});}
+async function checkBackend(show){try{const h=await api('/api/health');state.backend=true;$('backendDot').classList.add('ok');$('backendText').textContent='backend подключен';$('backendHint').textContent=h.service||'real API proxy готов';if(show)toast('Backend доступен: реальные обращения включены','success');await loadServerData(false);}catch(e){state.backend=false;$('backendDot').classList.remove('ok');$('backendText').textContent='backend не подключен';$('backendHint').textContent='Запустите: node server.js';if(show)toast('Backend недоступен: '+e.message,'error');}}
+async function loadServerData(showToast=true){try{const data=await api('/api/shops');if(Array.isArray(data.shops)){state.shops=data.shops;state.products=data.products||[];renderAll();await loadDashboard(false);renderAI(false);if(showToast)toast('Данные загружены из backend','success');}}catch(e){if(showToast)toast('Не удалось загрузить backend-данные: '+e.message,'error')}}
+async function loadDashboard(showToast=false){if(!state.authToken)return;try{state.insights=await api('/api/dashboard');renderStats();renderTodayBoard();renderOnboarding();renderAI(false);if(showToast)toast('AI-задачи обновлены','success')}catch(e){if(showToast)toast('Не удалось получить AI-задачи: '+e.message,'error')}}
+async function addShop(){const marketplace=$('newMarketplace').value;const payload={marketplace,name:$('newShopName').value.trim(),legal:$('newShopLegal').value.trim(),wbToken:$('wbToken').value.trim(),wbWarehouseId:$('wbWarehouseId').value.trim(),ozonClientId:$('ozonClientId').value.trim(),ozonApiKey:$('ozonApiKey').value.trim()};if(!payload.name){toast('Введите название магазина','error');return}if(marketplace==='wb'&&!payload.wbToken){toast('Введите WB token','error');return}if(marketplace==='ozon'&&(!payload.ozonClientId||!payload.ozonApiKey)){toast('Введите Ozon Client-Id и Api-Key','error');return}try{const res=await api('/api/shops',{method:'POST',body:JSON.stringify(payload)});closeModal('addShopModal');toast('Магазин сохранён. Проверяю API...','info');await loadServerData(false);if(res.shop?.id) await syncShop(res.shop.id);clearAddForm();}catch(e){toast('Реальное подключение не выполнено: '+e.message,'error');}}
+async function syncShop(id){const s=state.shops.find(x=>x.id==id);if(!s)return;if(s.demo&&!state.backend){toast('Для реальной синхронизации запустите server.js и добавьте свои ключи','error');return}try{toast('Синхронизация '+s.name+' через '+mp[s.marketplace].label+' API...','info');const res=await api('/api/shops/'+encodeURIComponent(id)+'/sync',{method:'POST'});if(res.shops){state.shops=res.shops;state.products=res.products||state.products}else{await loadServerData(false)}renderAll(); if(res.insights)state.insights=res.insights; await loadDashboard(false); renderAI(false);toast('Синхронизация завершена: '+(res.synced?.products??'')+' товаров, заказов: '+(res.synced?.orders??0),'success');}catch(e){toast('Ошибка синхронизации: '+e.message,'error');}}
+async function refreshAll(){if(!state.backend){await checkBackend(true); if(!state.backend)return}for(const s of state.shops){await syncShop(s.id)}}
+async function saveStock(pid){const p=state.products.find(x=>String(x.id)===String(pid));if(!p)return;const input=$('stock-'+cssId(pid));const stock=Number(input.value||0);try{await api('/api/shops/'+encodeURIComponent(p.shopId)+'/stocks',{method:'POST',body:JSON.stringify({items:[{...p,stock}]})});p.stock=stock;p.status=stock>0?'active':'no-stock';renderAll();renderAI(false);toast('Остаток отправлен в '+mp[p.marketplace].label,'success');}catch(e){toast('Не удалось отправить остаток: '+e.message,'error');}}
+function removeShop(id){const s=state.shops.find(x=>x.id==id);if(!s||!confirm('Удалить '+s.name+'?'))return;if(s.demo){state.shops=state.shops.filter(x=>x.id!==id);state.products=state.products.filter(p=>p.shopId!==id);renderAll();return}api('/api/shops/'+encodeURIComponent(id),{method:'DELETE'}).then(()=>loadServerData(false)).then(()=>toast('Магазин удалён','success')).catch(e=>toast('Ошибка удаления: '+e.message,'error'))}
+function openShop(id){const s=state.shops.find(x=>x.id==id);if(!s)return;const count=state.products.filter(p=>p.shopId==id).length;$('shopModalTitle').textContent=s.name;$('shopModalBody').innerHTML=`<div class="grid2"><div class="mini"><div>Маркетплейс</div><div>${mp[s.marketplace].label}</div></div><div class="mini"><div>Статус</div><div>${s.status}</div></div><div class="mini"><div>Товаров</div><div>${count}</div></div><div class="mini"><div>Последняя синхронизация</div><div style="font-size:12px">${s.lastSync?new Date(s.lastSync).toLocaleString('ru-RU'):'—'}</div></div></div><div style="display:flex;gap:10px;margin-top:16px"><button class="btn primary" onclick="syncShop('${s.id}');closeModal('shopModal')">🔄 Синхронизировать</button><button class="btn" onclick="showPage('ai',document.querySelectorAll('.nav-item')[5]);$('aiShop').value='${s.id}';renderAI(true);closeModal('shopModal')">🤖 AI по магазину</button></div>`;$('shopModal').classList.add('show')}
+function editProduct(id){const p=state.products.find(x=>String(x.id)===String(id));if(!p)return;toast('Редактор карточки подключается через API категории товаров. Товар: '+p.article,'info')}
+function localRecommendations(){const sel=$('aiShop')?.value||'all';let products=state.products;if(sel!=='all')products=products.filter(p=>p.shopId===sel);const rec=[];const no=products.filter(p=>Number(p.stock)===0);if(no.length)rec.push({priority:'high',title:'Пополнить товары без остатка',text:`${no.length} товаров недоступны к продаже. В первую очередь: ${no.slice(0,3).map(p=>p.article).join(', ')}.`,action:'Создать поставку/обновить остатки',impact:'возврат продаж'});const low=products.filter(p=>Number(p.stock)>0&&Number(p.stock)<=5);if(low.length)rec.push({priority:'medium',title:'Мало остатков — риск out-of-stock',text:`${low.length} товаров имеют остаток ≤ 5. Рекомендуем поднять запас до минимального страхового уровня.`,action:'Пополнить до 20+ шт.',impact:'снижение потерь'});const inactive=products.filter(p=>p.status==='inactive');if(inactive.length)rec.push({priority:'high',title:'Проверить неактивные карточки',text:`${inactive.length} карточек неактивны. Частые причины: фото, характеристики, модерация, цена или остаток.`,action:'Исправить контент',impact:'рост ассортимента'});const byName={};products.forEach(p=>{const key=(p.name||'').toLowerCase().replace(/\d+/g,'').trim();byName[key]=byName[key]||new Set();byName[key].add(p.marketplace)});const cross=Object.entries(byName).filter(([k,set])=>set.size===1&&k).length;if(cross)rec.push({priority:'low',title:'Кросс-листинг Ozon ↔ WB',text:`Есть ${cross} позиций, которые представлены только на одном маркетплейсе. Перенос карточек может дать быстрый прирост покрытия.`,action:'Разместить на втором МП',impact:'+ охват'});if(!rec.length)rec.push({priority:'low',title:'Критичных проблем нет',text:'Остатки и статусы выглядят нормально. Следующий шаг — анализ цен, рекламных ставок и маржинальности.',action:'Запустить аналитику цен',impact:'оптимизация'});return rec}
+async function renderAI(force){
+  if(force&&state.backend){await loadDashboard(false);try{const shop=$('aiShop')?.value||'all';const data=await api('/api/ai/recommendations?shopId='+encodeURIComponent(shop));if(data.insights)state.insights=data.insights;toast('AI-директор обновил задачи','success')}catch(e){toast('Backend AI недоступен: '+e.message,'error')}}
+  const ins=state.insights; let tasks=ins?.tasks||[];
+  const selected=$('aiShop')?.value||'all'; if(selected!=='all') tasks=tasks.filter(t=>state.products.find(p=>p.id===t.productId)?.shopId===selected);
+  if(!tasks.length){tasks=localRecommendations().map(r=>({priority:r.priority,title:r.title,text:r.text,action:r.action,moneyImpact:0,type:r.impact||'AI'}));}
+  const head=ins?`<div class="card ai-card low" style="grid-column:1/-1"><div class="ai-title"><b>Health Score: ${ins.healthScore}/100 · Потери 7д: ${money(ins.estimatedLoss7d||ins.estimatedLoss||0)}</b><span class="tag info">${ins.counters.orders7d||0} заказов за 7 дн.</span></div><p>AI-директор нашёл ${ins.tasks.length} задач. Прогноз потерь: 7 дней — ${money(ins.estimatedLoss7d||0)}, 14 дней — ${money(ins.estimatedLoss14d||0)}, 30 дней — ${money(ins.estimatedLoss30d||0)}. Возможные потерянные заказы за 7 дней: ${ins.lostOrders7d||0}.</p><div class="ai-meta"><span class="tag warn">Нулевые остатки: ${ins.counters.noStock}</span><span class="tag warn">Малые остатки: ${ins.counters.lowStock}</span><span class="tag err">Неактивные: ${ins.counters.inactive}</span><span class="tag info">Выручка 7д: ${money(ins.revenue?.sevenDays||0)}</span></div></div>`:'';
+  const html=head+tasks.slice(0,20).map(r=>`<div class="card ai-card ${r.priority}"><div class="ai-title"><b>${escapeHtml(r.title)}</b><span class="tag ${r.priority==='high'?'err':r.priority==='medium'?'warn':'info'}">${r.priority==='high'?'важно':r.priority==='medium'?'средне':'идея'}</span></div><p>${escapeHtml(r.text)}</p><div class="ai-meta"><span class="tag ok">${escapeHtml(r.action||'Действие')}</span><span class="tag info">${escapeHtml(r.type||'AI')}</span><span class="tag ${Number(r.moneyImpact)>0?'warn':'info'}">эффект ${money(r.moneyImpact||0)}</span>${r.article?`<span class="tag info">${escapeHtml(r.article)}</span>`:''}</div></div>`).join('');
+  $('aiGrid').innerHTML=html||'<div class="empty card">Нет AI-задач</div>';
+  $('quickAi').innerHTML=tasks.slice(0,2).map(r=>`<div class="card ai-card ${r.priority}"><div class="ai-title"><b>${escapeHtml(r.title)}</b><span class="tag ${r.priority==='high'?'err':r.priority==='medium'?'warn':'info'}">AI</span></div><p>${escapeHtml(r.text)}</p><div class="ai-meta"><span class="tag warn">${money(r.moneyImpact||0)}</span></div></div>`).join('')||'<div class="empty card">Нет рекомендаций</div>';
+}
+
+
+async function askAiChat(){try{const q=$('aiChatQuestion').value.trim();if(!q){toast('Введите вопрос','error');return}const data=await api('/api/chat',{method:'POST',body:JSON.stringify({question:q})});$('aiChatAnswer').textContent=(data.provider==='gemini'?'Gemini: ':'Rules: ')+data.answer;toast('Ответ готов','success')}catch(e){toast('Ошибка AI-чата: '+e.message,'error')}}
+async function generateAiCard(){try{const article=$('aiCardArticle').value.trim();const data=await api('/api/ai/card',{method:'POST',body:JSON.stringify({article})});$('aiGenResult').textContent=JSON.stringify(data.result,null,2);toast('Карточка готова','success')}catch(e){toast('Ошибка генерации карточки: '+e.message,'error')}}
+async function generateReviewReply(){try{const review=$('aiReviewText').value.trim();const data=await api('/api/ai/review-reply',{method:'POST',body:JSON.stringify({review,style:'дружелюбный'})});$('aiGenResult').textContent=data.reply;toast('Ответ на отзыв готов','success')}catch(e){toast('Ошибка ответа на отзыв: '+e.message,'error')}}
+
+async function renderDirector(force=false){
+  if(!state.authToken)return;
+  try{if(force||!state.intelligence){state.intelligence=await api('/api/intelligence'); if(state.intelligence.insights)state.insights=state.intelligence.insights;}
+  const m=state.intelligence.modules, i=state.intelligence.insights;
+  const ga=state.intelligence.geminiAnalysis?.result;
+  $('directorSummary').innerHTML=`<div class="card stat"><div class="label">Health Score</div><div class="value">${i.healthScore}/100</div><div class="sub">${ga?.healthComment||'общая оценка кабинета'}</div></div><div class="card stat"><div class="label">Потери 7 дней</div><div class="value">${money(i.estimatedLoss7d||0)}</div><div class="sub">${ga?.moneyLossComment||('≈ '+(i.lostOrders7d||0)+' заказов риска')}</div></div><div class="card stat"><div class="label">Gemini 2.5 Flash</div><div class="value">${state.intelligence.geminiAnalysis?.provider==='gemini'?'ON':'Rules'}</div><div class="sub">анализ модулей без парсинга</div></div>`;
+  const cards=[
+    ['Gemini-анализ 9 модулей',ga?`${ga.executiveSummary||''}<br><br><b>Потери:</b> ${ga.moduleInsights?.loss7d||''}<br><b>Неликвид:</b> ${ga.moduleInsights?.deadStock||''}<br><b>ABC/XYZ:</b> ${ga.moduleInsights?.abcXyz||''}<br><b>План закупки:</b> ${ga.moduleInsights?.purchasePlan||''}<br><b>Unit-экономика:</b> ${ga.moduleInsights?.unitEconomics||''}<br><b>Безопасная цена:</b> ${ga.moduleInsights?.safePrice||''}`:'Gemini не подключён — работает бесплатный rules-анализ'],
+    ['Что сделать сегодня',m.todayTasks?.slice(0,5).map(x=>`${x.title} — ${x.article||''}`).join('<br>')||'Нет срочных задач'],
+    ['Неликвид / замороженные деньги',m.deadStock?.slice(0,5).map(x=>`${x.article}: ${money(x.frozenMoney)}`).join('<br>')||'Неликвид не найден'],
+    ['ABC/XYZ и рейтинг SKU',m.productScores?.slice(0,6).map(x=>`${x.article}: ${x.grade}/${x.abc}${x.xyz}`).join('<br>')||'Нет данных'],
+    ['Календарь риска',m.riskCalendar?.slice(0,5).map(x=>`${x.article}: закончится ${x.stockoutDate}`).join('<br>')||'Рисков нет'],
+    ['План закупки',m.purchaseForecast?.slice(0,5).map(x=>`${x.article}: заказать ${x.recommendedQty} шт.`).join('<br>')||'Закупка не требуется'],
+    ['Unit-экономика',m.unitEconomics?.slice(0,5).map(x=>`${x.article}: прибыль ${money(x.netProfit)}, маржа ${x.marginPct}%`).join('<br>')||'Загрузите себестоимость'],
+    ['Убыточные товары',m.unprofitableAlerts?.slice(0,5).map(x=>`${x.article}: ${money(x.netProfit)}/ед.`).join('<br>')||'Не найдены'],
+    ['Безопасная цена',m.safePrices?.slice(0,5).map(x=>`${x.article}: мин. ${money(x.safePrice)}`).join('<br>')||'Нет данных'],
+    ['Репрайсер с подтверждением',m.repricer?.slice(0,5).map(x=>`${x.article}: ${x.recommendation}`).join('<br>')||'Нет опасных цен'],
+    ['SEO-аудит карточек',m.seoAudit?.slice(0,5).map(x=>`${x.article}: ${x.score}/100`).join('<br>')||'Нет карточек'],
+    ['Кросс-листинг Ozon/WB',m.crossListing?.slice(0,5).map(x=>`${x.article}: ${x.from} → ${x.to}`).join('<br>')||'Нет кандидатов'],
+    ['Отзывы / автоответы',`${m.reviewsAnalysis?.note||''}<br>Пример: ${m.autoReplies?.example||''}`],
+    ['Telegram-утренний отчёт',m.telegramMorningReport],
+    ['Антикризисный режим',m.antiCrisis?.map(x=>`День ${x.day}: ${x.task}`).join('<br>')||'Критичных проблем нет'],
+    ['Индекс прав API',m.apiTrustIndex?.map(x=>`${x.name}: ${x.status}`).join('<br>')||'Подключите магазины'],
+    ['Конкуренты / MPStats-аналог',m.competitorComparison?.note||'Отключено']
+  ];
+  $('directorGrid').innerHTML=cards.map(([title,body])=>`<div class="card ai-card low"><div class="ai-title"><b>${escapeHtml(title)}</b><span class="tag info">модуль</span></div><p>${body||'—'}</p></div>`).join('');
+  renderStats();
+  }catch(e){toast('Не удалось загрузить AI-центр: '+e.message,'error')}
+}
+async function downloadWeeklyReport(){try{const res=await fetch(apiUrl('/api/report/weekly'),{headers:{Authorization:'Bearer '+state.authToken}});if(!res.ok)throw new Error('HTTP '+res.status);const text=await res.text();const blob=new Blob([text],{type:'text/markdown;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sellerpilot-weekly-report.md';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Отчёт скачан','success')}catch(e){toast('Не удалось скачать отчёт: '+e.message,'error')}}
+
+function openAddShop(){toggleMarketFields();$('addShopModal').classList.add('show')}
+function closeModal(id){$(id).classList.remove('show')}
+function toggleMarketFields(){const m=$('newMarketplace').value;$('wbFields').classList.toggle('active',m==='wb');$('ozonFields').classList.toggle('active',m==='ozon')}
+function clearAddForm(){['newShopName','newShopLegal','wbToken','wbWarehouseId','ozonClientId','ozonApiKey'].forEach(id=>$(id).value='')}
+function saveSettings(){state.apiBase=$('apiBase').value.trim();localStorage.setItem('apiBase',state.apiBase);toast('Настройки сохранены','success')}
+
+
+async function loadTelegramSettings(){
+  if(!state.authToken)return;
+  try{const data=await api('/api/telegram/settings');const st=data.settings||{};$('tgChatId').value=st.chatId||'';$('tgReportTime').value=st.reportTime||'09:00';$('tgTimezone').value=st.timezone||'Europe/Moscow';$('tgEnabled').value=st.enabled?'true':'false';$('tgTokenHint').textContent=st.hasBotToken?'Сохранён токен: '+st.botTokenMasked+'. Чтобы заменить — вставьте новый.':'Создайте бота через @BotFather и вставьте токен.';$('tgStatus').textContent=st.lastSentAt?'Последняя отправка: '+new Date(st.lastSentAt).toLocaleString('ru-RU'):(st.lastError?'Ошибка: '+st.lastError:'Telegram отчёт ещё не отправлялся.');}catch(e){/* ignore */}
+}
+async function saveTelegramSettings(){
+  try{const payload={botToken:$('tgBotToken').value.trim(),chatId:$('tgChatId').value.trim(),reportTime:$('tgReportTime').value||'09:00',timezone:$('tgTimezone').value||'Europe/Moscow',enabled:$('tgEnabled').value==='true'};const data=await api('/api/telegram/settings',{method:'POST',body:JSON.stringify(payload)});$('tgBotToken').value='';toast('Telegram-настройки сохранены','success');await loadTelegramSettings();}catch(e){toast('Ошибка Telegram-настроек: '+e.message,'error')}
+}
+async function testTelegramReport(){
+  try{const payload={botToken:$('tgBotToken').value.trim(),chatId:$('tgChatId').value.trim(),reportTime:$('tgReportTime').value||'09:00',timezone:$('tgTimezone').value||'Europe/Moscow'};const data=await api('/api/telegram/test',{method:'POST',body:JSON.stringify(payload)});toast(data.message||'Тест отправлен','success');}catch(e){toast('Telegram тест не отправлен: '+e.message,'error')}
+}
+
+async function saveCostsFromText(){
+  const text=$('costsText').value.trim();
+  const items=text.split(/\n+/).map(line=>line.split(/[;,	]/)).filter(x=>x[0]&&x[1]).map(x=>({article:x[0].trim(),cost:Number(String(x[1]).replace(',','.'))||0}));
+  if(!items.length){toast('Введите строки: артикул; себестоимость','error');return}
+  try{const data=await api('/api/costs',{method:'POST',body:JSON.stringify({items})}); if(data.insights)state.insights=data.insights; renderAI(false); renderStats(); toast('Себестоимость сохранена: '+items.length+' SKU','success')}catch(e){toast('Ошибка сохранения себестоимости: '+e.message,'error')}
+}
+
+function toast(msg,type='info'){const t=document.createElement('div');t.className='toast '+type;t.innerHTML=`${type==='success'?'✅':type==='error'?'❌':'ℹ️'} ${escapeHtml(msg)}`;$('toasts').appendChild(t);setTimeout(()=>t.remove(),4200)}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show')}));
+bootAuth();
+</script>
+<script>
+// Behance-inspired motion interactions: cursor glow, reveal, subtle parallax
+(function(){
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  function addMotionLayers(){
+    if(document.querySelector('.motion-cursor')) return;
+    ['noise-layer','motion-cursor','motion-rings','motion-rings left','motion-orb o1','motion-orb o2','motion-orb o3'].forEach(cls=>{
+      const d=document.createElement('div'); d.className=cls; document.body.prepend(d);
+    });
+  }
+  function setupCursor(){
+    let x=innerWidth*.5,y=innerHeight*.22,tx=x,ty=y;
+    addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY;document.documentElement.style.setProperty('--mx',tx+'px');document.documentElement.style.setProperty('--my',ty+'px');},{passive:true});
+    function raf(){x+=(tx-x)*.08;y+=(ty-y)*.08;document.documentElement.style.setProperty('--mx',x+'px');document.documentElement.style.setProperty('--my',y+'px');requestAnimationFrame(raf)} raf();
+  }
+  function setupReveal(){
+    const targets=document.querySelectorAll('.card,.dash,.banner,.cta-box,.section .title,.section .lead,.hero h1,.hero p,.hero-cta,.trust,.table-card,.shop-card,.ai-card,.stats-grid,.grid4,.grid3,.grid2');
+    targets.forEach(el=>el.classList.add('reveal'));
+    const io=new IntersectionObserver(entries=>entries.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in-view');io.unobserve(en.target)}}),{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+    targets.forEach(el=>io.observe(el));
+  }
+  function setupTilt(){
+    const els=[...document.querySelectorAll('.card,.dash,.shop-card,.ai-card')].slice(0,80);
+    els.forEach(el=>{
+      el.addEventListener('pointermove',e=>{
+        if(innerWidth<760) return;
+        const r=el.getBoundingClientRect();
+        const px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5;
+        el.style.transform=`translateY(-6px) rotateX(${(-py*3).toFixed(2)}deg) rotateY(${(px*3).toFixed(2)}deg)`;
+      });
+      el.addEventListener('pointerleave',()=>{el.style.transform='';});
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+  function init(){addMotionLayers();setupCursor();setupReveal();setupTilt();}
+})();
+
+</script>
+<script>
+// Strong visible motion layer v2
+(function(){
+  if(document.querySelector('.motion-stage-strong')) return;
+  const stage=document.createElement('div');
+  stage.className='motion-stage-strong';
+  stage.innerHTML='<div class="mesh"></div><div class="grid"></div><div class="beam"></div><div class="beam b2"></div><div class="marquee">SELLERPILOT AI · OZON · WILDBERRIES · MOTION · SELLERPILOT AI · OZON · WILDBERRIES · MOTION · </div>';
+  document.body.prepend(stage);
+  let tx=innerWidth*.55, ty=innerHeight*.25;
+  addEventListener('pointermove', e=>{tx=e.clientX;ty=e.clientY;document.documentElement.style.setProperty('--mx',tx+'px');document.documentElement.style.setProperty('--my',ty+'px')},{passive:true});
+})();
+
+</script>
+</body>
+</html>
